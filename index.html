@@ -1,0 +1,33 @@
+<!doctype html>
+
+<html ng-app = "teamUp">
+	<head>
+		<title>Team Up</title>
+		
+        <link rel="stylesheet" type="text/css" href="material-css/material-css.css">
+	</head>
+	<body mc-layout="no-nav">
+        
+		<header class="mc-header">
+			<div class="mc-header-line">
+				<button class="mc-button mc-button-icon" mc-action="menu"></button>
+				<h1 class="mc-title">Team Up!</h1>
+			</div>
+        </header>
+
+		<section class="mc-content mc-untabbed" data-ng-view=""></section>
+		
+    	<script src="js/angular.min.js"></script>
+    	<script src="js/angular-route.min.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="material-css/material-css.js"></script>
+
+
+    	<script src="app/app.js"></script>
+
+    	<script src="app/controllers/mainController.js"></script>
+        
+        <script src="app/services/services.js"></script>
+
+	</body>
+</html>

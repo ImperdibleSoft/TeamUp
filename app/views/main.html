@@ -1,0 +1,62 @@
+<div class="mc-right" data-ng-show="!reclutation && isUser">
+	<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-click="createReclutation()">Create</button>
+</div>
+
+<div class="mc-layout" mc-layout="1">
+	<div class="mc-layout" mc-layout-size="biggest">
+		
+		<!-- Login -->
+		<div class="mc-card" data-ng-show="!isUser">
+		
+			<div class="mc-header">
+				<h1 class="mc-title">Login</h1>
+			</div>
+			
+			<form class="mc-content" name="loginForm" role="form" novalidate>
+				<p class="mc-input">
+					<input type="text" name="name" data-ng-model="name" />
+					<label class="mc-label">Your name</label>
+				</p>
+			</form>
+			
+			<div class="mc-footer">
+				<button class="mc-button mc-button-text" data-ng-click="loginUser()">Login</button>
+			</div>
+		</div>
+		
+		<!-- No reclutation -->
+		<div class="mc-card" data-ng-show="!reclutation && isUser">
+			<div class="mc-content">
+				<p class="mc-text">No reclutations created.</p>
+			</div>
+		</div>
+		
+		<!-- Existing reclutation -->
+		<div class="mc-card" data-ng-show="reclutation && isUser">
+		
+			<div class="mc-header">
+				<h1 class="mc-title">New Reclutation</h1>
+			</div>
+			
+			<div class="mc-content">
+				<p class="mc-text">Reclutation created. Here are the players!</p>
+				<div mc-layout="list">
+					<div class="mc-list-item" data-ng-repeat="player in reclutation.players">
+						<p class="mc-text">{{ player }}</p>
+					</div>
+				</div>
+			</div>
+			
+			<div class="mc-footer">
+				<!-- <button class="mc-button mc-button-text" data-ng-click="reclutation.addPlayer(username)" data-ng-if="reclutation.players.length < 4">+1</button> -->
+				
+				<!-- Add me -->
+				<button class="mc-button mc-button-text" data-ng-click="reclutation.addPlayer(username)" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf(name) < 0">+1</button>
+				
+				<!-- Remove me -->
+				<button class="mc-button mc-button-text" data-ng-click="reclutation.removePlayer(username)" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf(name) >= 0">-1</button>
+			</div>
+		</div>
+		
+	</div>
+</div>
