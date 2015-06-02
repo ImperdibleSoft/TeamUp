@@ -83,12 +83,12 @@
 		</form>
 		
 		<!-- Existing recruiting -->
-		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location">
+		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location">
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
 				<h1 class="mc-title">{{ recruiting.description }}</h1>
-				<h2 class="mc-subtitle">ID: {{ recruiting.id }}</h2>
+				<h2 class="mc-subtitle">Created: {{ recruiting.date }}</h2>
 			</div>
 			
 			<div class="mc-content" mc-layout="list">

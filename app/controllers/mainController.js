@@ -164,7 +164,8 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 				"description": temp.description,
 				"location": temp.location,
 				"maxPlayers": temp.maxPlayers,
-				"players": temp.players
+				"players": temp.players,
+				"date": temp.date ? temp.date : false
 			};
 			
 			var recru = new Recruiting(data);
@@ -194,6 +195,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 		this.location = data.location;
 		this.maxPlayers = data.maxPlayers;
 		this.players = new Array();
+		this.date = data.date ? formatDate(data.date) : "0000-00-00 00:00:00";
 		
 		this.addPlayer = function(param){
 			if(self.players.length < 4){
@@ -290,4 +292,12 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			}
 		}
 	};
+	
+	var formatDate = function(param){
+		console.log(param);
+		var newDate = param.substring(11, 16);
+		console.log(newDate);
+		
+		return newDate;
+	}
 }]);

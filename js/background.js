@@ -57,6 +57,7 @@ chrome.runtime.onConnect.addListener(function(create){
 
 					recruitingsList = new Array();
 					for(var x in response2.recruitings){
+						response2.recruitings[x].id = response2.recruitings[x].id_recruiting;
 						response2.recruitings[x].players = response2.recruitings[x].players.split(",");
 						recruitingsList.push( response2.recruitings[x] );
 					}
@@ -182,6 +183,7 @@ function getNews(){
 			
 			recruitingsList = new Array();
 			for(var x in response.recruitings){
+				response.recruitings[x].id = response.recruitings[x].id_recruiting;
 				response.recruitings[x].players = response.recruitings[x].players.split(",");
 				recruitingsList.push( response.recruitings[x] );
 			}
