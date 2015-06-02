@@ -200,22 +200,93 @@ teamUp.controller("mainCtrl", ['$scope', function($scope){
 				else{
 					self.players.push( $scope.user.name );
 					$scope.user.waiting = true;
+					
+					/* Update a recruiting	*/
+					var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
+				
+					console.log("Sending updated recruiting to BackgroundJS");
+					console.log(self);
+					
+					/*	Send the current recruiting	*/
+					updateRecruiting.postMessage({
+						'recruiting': self
+					});
+					
+					updateRecruiting.onMessage.addListener(function(response){
+						if(response.recruitingsList){
+							console.log("Getting the recruitingsList from BackgroundJS");
+							console.log(response.recruitingsList);
+							
+							$scope.parseRecruitingsList(response.recruitingsList);
+							
+							console.log("recruitingsList parsed");
+							console.log($scope.recruitingsList);
+						}
+						
+						$("#refresh").click();
+					});
+				
 				}
+				
+				
 			}
 		}
 		
 		this.removePlayer = function(){
 			if(self.players.indexOf( $scope.user.name ) >= 0){
 				self.players.splice( self.players.indexOf( $scope.user.name ), 1 );
+				
+				/* Update a recruiting	*/
+				var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
+				
+				console.log("Sending updated recruiting to BackgroundJS");
+				console.log(self);
+				
+				/*	Send the current recruiting	*/
+				updateRecruiting.postMessage({
+					'recruiting': self
+				});
+				
+				updateRecruiting.onMessage.addListener(function(response){
+					if(response.recruitingsList){
+						console.log("Getting the recruitingsList from BackgroundJS");
+						console.log(response.recruitingsList);
+						
+						$scope.parseRecruitingsList(response.recruitingsList);
+						
+						console.log("recruitingsList parsed");
+						console.log($scope.recruitingsList);
+					}
+					
+					$("#refresh").click();
+				});
+				
 				$scope.user.waiting = false;
 			}
 			
 			if(self.players.length <= 0){
-				for(var x in $scope.recruitingsList){
-					if($scope.recruitingsList[x].id == self.id){
-						$scope.recruitingsList.splice( x, 1 );
+				
+				/* Create status connection	*/
+				var removeRecruiting = chrome.runtime.connect({name: "removeRecruiting"});
+				
+				/*	Ask for conected user	*/
+				removeRecruiting.postMessage({
+					'id': self.id
+				});
+				
+				removeRecruiting.onMessage.addListener(function(response){
+					if(response.recruitingsList){
+						console.log("Getting the recruitingsList from BackgroundJS");
+						console.log(response.recruitingsList);
+						
+						$scope.parseRecruitingsList(response.recruitingsList);
+						
+						console.log("recruitingsList parsed");
+						console.log($scope.recruitingsList);
 					}
-				}
+					
+					$("#refresh").click();
+				});
 			}
 		}
 	};

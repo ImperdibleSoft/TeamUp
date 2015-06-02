@@ -84,7 +84,55 @@ chrome.runtime.onConnect.addListener(function(create){
 	}
 });
 
-/*	Recruitings conection, get the recruitigns list	*/
+/*	Update recruiting, updates a recruiting	*/
+chrome.runtime.onConnect.addListener(function(updateRecruiting){
+	if(updateRecruiting.name == "updateRecruiting"){
+		updateRecruiting.onMessage.addListener(function(response){
+			
+			console.log("Updating the recruiting with ID "+ response.recruiting.id);
+			
+			for(var x in recruitingsList){
+				if(response.recruiting.id == recruitingsList[x].id){
+					recruitingsList[x] = response.recruiting;
+				}
+			}
+			
+			console.log("Returning new recruitingsList to UI");
+			console.log(recruitingsList);
+			
+			updateRecruiting.postMessage({
+				'recruitingsList': recruitingsList
+			})
+			
+		});
+	}
+});
+
+/*	RemoveRecruiting connection, delete a recruiting	*/
+chrome.runtime.onConnect.addListener(function(removeRecruiting){
+	if(removeRecruiting.name == "removeRecruiting"){
+		removeRecruiting.onMessage.addListener(function(response){
+			
+			console.log("Removing recruiting with ID "+ response.id);
+			
+			for(var x in recruitingsList){
+				if(response.id == recruitingsList[x].id){
+					recruitingsList.splice( x, 1 );
+				}
+			}
+			
+			console.log("Returning new recruitingsList to UI");
+			console.log(recruitingsList);
+			
+			removeRecruiting.postMessage({
+				'recruitingsList': recruitingsList
+			})
+			
+		});
+	}
+});
+
+/*	Recruitings conection, get the recruiting list	*/
 chrome.runtime.onConnect.addListener(function(recruitings){
 	if(recruitings.name == "recruitings"){
 		recruitings.postMessage({
