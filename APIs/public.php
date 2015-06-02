@@ -45,7 +45,13 @@
 				while ($fila = mysqli_fetch_array($resul)){
 					$recruitings[] = limpiar_array($fila);
 				}
-				$response['recruitings'] = $recruitings;
+				
+				if(!empty($recruitings)){
+					$response['recruitings'] = $recruitings;
+				}
+				else{
+					$response['recruitings'] = false;
+				}
 				
 				break;;
 		}

@@ -1,9 +1,10 @@
 /*	App start	*/
-/*
-var appURL = "http://lordfido.github.io/TeamUp";
-*/
 
+//var appURL = "http://lordfido.github.io/TeamUp";
 var appURL = location.host;
+
+//var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action="
+var apiURL = "http://10.160.170.6/TeamUp/APIs/public.php?action="
 
 var user = false;
 var recruitingsList = new Array();
@@ -50,7 +51,7 @@ chrome.runtime.onConnect.addListener(function(create){
 			
 			$.ajax({
 				type : 'post',
-				url : appURL +'/APIs/public.php?action=createRecruiting',
+				url : apiURL +'createRecruiting',
 				dataType : 'json', 
 				data : response.create,
 				success : function(response2) {
@@ -161,7 +162,7 @@ function getNews(){
 	
 	$.ajax({
 		type : 'post',
-		url : appURL +'/APIs/public.php?action=getRecruitings',
+		url : apiURL +'getRecruitings',
 		dataType : 'json', 
 		data : {
 			'location': user.location
