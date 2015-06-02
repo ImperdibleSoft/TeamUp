@@ -177,7 +177,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 				}
 			}
 			
-			if(recru.location == $user.location){
+			if(recru.location == $scope.user.location){
 				$scope.recruitingOnMyLocation = true;
 			}
 			

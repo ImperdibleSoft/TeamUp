@@ -52,15 +52,16 @@ chrome.runtime.onConnect.addListener(function(create){
 				method : 'POST',
 				url : apiURL +'createRecruiting',
 				dataType : 'json', 
-				data : response.create,
+				data : JSON.stringify( response.create ),
 				success : function(response2) {
 
 					recruitingsList = new Array();
 					for(var x in response2.recruitings){
+						response2.recruitings[x].players = response2.recruitings[x].players.split(",");
 						recruitingsList.push( response2.recruitings[x] );
 					}
 					
-					showNotification(response.create.id, "New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +"players");
+					showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +"players", response.create.id);
 					getNews();
 				}
 			});
@@ -81,7 +82,7 @@ chrome.runtime.onConnect.addListener(function(create){
 			console.log(recruitingsList);
 			
 			/*	Show the notification	*/
-			showNotification(response.create.id, "New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players");
+			showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players", response.create.id);
 			
 		});
 	}
@@ -162,21 +163,28 @@ chrome.runtime.onConnect.addListener(function(logout){
 /* Get recruiting list */
 function getNews(){
 	
+	var data = {
+		"location": user.location
+	}
+	
 	$.ajax({
 		type : 'post',
 		url : apiURL +'getRecruitings',
 		dataType : 'json', 
-		data : {
-			'location': user.location
-		},
+		data : JSON.stringify(data),
 		success : function(response) {
 			self.noerror = true;
 			
 			/* Alerta para mensajes */
 			if(response.recruitings.length > recruitingsList.length){
-				showNotification("New recruitings", "There are "+ response.recruitings.length +" opened recruitings");
+				showNotification("New recruitings", "There are "+ response.recruitings.length +" opened recruitings", 1);
 			}
-			recruitingsList = response.recruitings;
+			
+			recruitingsList = new Array();
+			for(var x in response.recruitings){
+				response.recruitings[x].players = response.recruitings[x].players.split(",");
+				recruitingsList.push( response.recruitings[x] );
+			}
 			
 			changeIcon( recruitingsList.length );
 		},
@@ -196,7 +204,7 @@ function changeIcon(param){
 }
 
 /*	Creates a new Notification	*/
-function showNotification(id, title, msg){
+function showNotification(title, msg, id){
 
 	var options = {
 		"type": "basic",
@@ -207,3 +215,5 @@ function showNotification(id, title, msg){
 	var wkn = chrome.notifications;
 	var notif = wkn.create(id+"", options);
 }
+
+
