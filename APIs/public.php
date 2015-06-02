@@ -16,6 +16,8 @@
 		
 		switch($_GET['action']){
 			case "getLocations":
+			
+				/* Get all locations	*/
 				$sql = "SELECT * FROM locations";
 				$resul = mysqli_query($conexion, $sql);
 				if(!$resul){
@@ -32,8 +34,23 @@
 				
 				break;;
 			
+			case "createLocation":
+			
+				/* Create a location	*/
+				$sql = "INSERT INTO locations (name) VALUES ('". $POST->name ."')";
+				$resul = mysqli_query($conexion, $sql);
+				if(!$resul){
+					$error = mysqli_error($conexion);
+					$response['error'][] = $error;
+					echo json_encode($response);
+					exit();
+				}
+				break;;
+			
 			case "getRecruitings":
-				$sql = "SELECT * FROM recruitings";
+			
+				/*	Get all recruitings	*/
+				$sql = "SELECT * FROM recruitings WHERE location='". $POST['location'] ."'";
 				$resul = mysqli_query($conexion, $sql);
 				if(!$resul){
 					$error = mysqli_error($conexion);
@@ -45,13 +62,65 @@
 				while ($fila = mysqli_fetch_array($resul)){
 					$recruitings[] = limpiar_array($fila);
 				}
+				$response['recruitings'] = $recruitings;
 				
-				if(!empty($recruitings)){
-					$response['recruitings'] = $recruitings;
+				break;;
+			
+			case "createRecruiting":
+			
+				/*	Create a new Recruiting	*/
+				$sql = "INSERT INTO recruitings (id_recruiting, description, location, maxPlayers, players) VALUES (". $POST->id .", '". $POST->description ."', '". $POST->location ."', ". $POST->maxPlayers .", '". $POST->players ."')";
+				$resul = mysqli_query($conexion, $sql);
+				if(!$resul){
+					$error = mysqli_error($conexion);
+					$response['error'][] = $error;
+					echo json_encode($response);
+					exit();
 				}
-				else{
-					$response['recruitings'] = false;
+				
+				/*	Get all recruitings	*/
+				$sql = "SELECT * FROM recruitings WHERE location='". $POST['location'] ."'";
+				$resul = mysqli_query($conexion, $sql);
+				if(!$resul){
+					$error = mysqli_error($conexion);
+					$response['error'][] = $error;
+					echo json_encode($response);
+					exit();
 				}
+				$recruitings = array();
+				while ($fila = mysqli_fetch_array($resul)){
+					$recruitings[] = limpiar_array($fila);
+				}
+				$response['recruitings'] = $recruitings;
+				
+				break;;
+			
+			case "updateRecruiting":
+			
+				/*	Update a particular recruiting	*/
+				$sql = "UPDATE recruitings SET players='". $POST->players ."' WHERE id_recruiting=". $POST->id;
+				$resul = mysqli_query($conexion, $sql);
+				if(!$resul){
+					$error = mysqli_error($conexion);
+					$response['error'][] = $error;
+					echo json_encode($response);
+					exit();
+				}
+				
+				/*	Get all recruitings	*/
+				$sql = "SELECT * FROM recruitings WHERE location='". $POST['location'] ."'";
+				$resul = mysqli_query($conexion, $sql);
+				if(!$resul){
+					$error = mysqli_error($conexion);
+					$response['error'][] = $error;
+					echo json_encode($response);
+					exit();
+				}
+				$recruitings = array();
+				while ($fila = mysqli_fetch_array($resul)){
+					$recruitings[] = limpiar_array($fila);
+				}
+				$response['recruitings'] = $recruitings;
 				
 				break;;
 		}
