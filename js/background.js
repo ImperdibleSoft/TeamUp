@@ -176,17 +176,8 @@ function getNews(){
 			changeIcon(parseInt(response['mensajes']) + parseInt(response['notificaciones']));
 		},
 		complete : function(response) {
-			// send a new ajax request when this request is finished
-			if(!self.noerror) {
-				
-				// if a connection problem occurs, try to reconnect each 5 seconds
-				setTimeout(function(){ getNews(); }, 5000);
-			}else{
-
-				// persistent connection
-				getNews();
-			}
-			self.noerror = false;
+			
+			setTimeout(function(){ getNews(); }, 5000);
 		}
 	});
 }
