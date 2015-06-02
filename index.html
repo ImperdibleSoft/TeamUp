@@ -1,10 +1,14 @@
 <!doctype html>
 
-<html ng-app = "teamUp">
+<html ng-app="teamUp" ng-csp="" style="min-width: 250px;">
 	<head>
 		<title>Team Up</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		
+        <link rel="stylesheet" type="text/css" href="js/angular-csp.css">
         <link rel="stylesheet" type="text/css" href="material-css/material-css.css">
+        <link rel="stylesheet" type="text/css" href="material-css/color-themes/twitter-theme.css">
+		
 	</head>
 	<body mc-layout="no-nav">
         
@@ -22,12 +26,10 @@
         <script src="js/jquery.min.js"></script>
         <script src="material-css/material-css.js"></script>
 
-
     	<script src="app/app.js"></script>
 
     	<script src="app/controllers/mainController.js"></script>
         
         <script src="app/services/services.js"></script>
-
 	</body>
 </html>

@@ -1,4 +1,4 @@
-<div class="mc-right" data-ng-show="!reclutation && isUser">
+<div class="mc-right" data-ng-if="user && !user.waiting && !creatingReclutation">
 	<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-click="createReclutation()">Create</button>
 </div>
 
@@ -6,55 +6,101 @@
 	<div class="mc-layout" mc-layout-size="biggest">
 		
 		<!-- Login -->
-		<div class="mc-card" data-ng-show="!isUser">
+		<form class="mc-card" data-ng-show="!user" data-ng-submit="loginUser()" name="loginForm" role="form" novalidate>
 		
 			<div class="mc-header">
+				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
 				<h1 class="mc-title">Login</h1>
 			</div>
 			
-			<form class="mc-content" name="loginForm" role="form" novalidate>
-				<p class="mc-input">
-					<input type="text" name="name" data-ng-model="name" />
-					<label class="mc-label">Your name</label>
-				</p>
-			</form>
+			<div class="mc-content">
+				<span class="mc-input" style="width: calc(100% - 20px)">
+					<input type="text" name="userName" data-ng-model="userName" data-ng-pattern="namePattern" required />
+					<label class="mc-label">Name</label>
+					<span class="mc-input-message mc-color-red" data-ng-if="!loginForm.userName.$valid && (loginForm.userName.$dirty || loginForm.$submitted)">Please, enter a valid name</span>
+				</span>
+				
+				<span class="mc-input" style="width: calc(100% - 20px)">
+					<input type="text" name="userLocation" data-ng-model="userLocation" data-ng-pattern="officePattern" required />
+					<label class="mc-label">Company - Location</label>
+					<span class="mc-input-message mc-color-red" data-ng-if="!loginForm.userLocation.$valid && (loginForm.userLocation.$dirty || loginForm.$submitted)">Please, enter a valid office name</span>
+				</span>
+			</div>
 			
 			<div class="mc-footer">
-				<button class="mc-button mc-button-text" data-ng-click="loginUser()">Login</button>
+				<button type="submit" class="mc-button mc-button-text">Login</button>
 			</div>
-		</div>
+		</form>
 		
 		<!-- No reclutation -->
-		<div class="mc-card" data-ng-show="!reclutation && isUser">
+		<div class="mc-card" data-ng-if="user && reclutations.length < 1 && !creatingReclutation">
 			<div class="mc-content">
-				<p class="mc-text">No reclutations created.</p>
+				<p class="mc-text">No active reclutations on:</p>
+				<div mc-layout="list">
+					<div class="mc-list-item" mc-action="location">
+						<p class="mc-title">{{ user.location }}</p>
+					</div>
+				</div>
 			</div>
 		</div>
 		
-		<!-- Existing reclutation -->
-		<div class="mc-card" data-ng-show="reclutation && isUser">
+		<!-- New Reclutation -->
+		<form class="mc-card" data-ng-show="user && creatingReclutation" data-ng-submit="saveReclutation()" name="reclutationForm" role="form" novalidate>
 		
 			<div class="mc-header">
-				<h1 class="mc-title">New Reclutation</h1>
+				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
+				<h1 class="mc-title">New reclutation</h1>
 			</div>
 			
 			<div class="mc-content">
-				<p class="mc-text">Reclutation created. Here are the players!</p>
-				<div mc-layout="list">
-					<div class="mc-list-item" data-ng-repeat="player in reclutation.players">
-						<p class="mc-text">{{ player }}</p>
-					</div>
+				<span class="mc-input" style="width: calc(100% - 20px)">
+					<input type="text" name="description" data-ng-model="description" required />
+					<label class="mc-label">Activity / Description</label>
+					<span class="mc-input-message mc-color-red" data-ng-if="!reclutationForm.description.$valid && (reclutationForm.description.$dirty || reclutationForm.$submitted)">Please, enter a valid activity or description</span>
+				</span>
+				
+				<span class="mc-input" style="width: calc(100% - 20px)">
+					<input type="text" name="location" data-ng-model="user.location" disabled />
+					<label class="mc-label" data-ng-class="{'mc-floating-label': user.location}">Location</label>
+				</span>
+				<br />
+				
+				<span class="mc-text">Players needed:</span>
+				<br />
+				<button type="button" class="mc-button mc-button-icon mc-button-raised mc-clickable" mc-action="remove" data-ng-click="decreaseMaxPlayers()" data-ng-disabled="maxPlayers <= 2"></button>
+				<span class="mc-button mc-button-text mc-bg-white mc-color-twitter">{{ maxPlayers }}</span>
+				<button type="button" class="mc-button mc-button-icon mc-button-raised mc-clickable" mc-action="add" data-ng-click="increaseMaxPlayers()" data-ng-disabled="maxPlayers >= 12"></button>
+			</div>
+			
+			<div class="mc-footer">
+				<button type="submit" class="mc-button mc-button-comb" mc-action="done">Create</button>
+				<button type="button" class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="cancelReclutation()">Cancel</button>
+			</div>
+		</form>
+		
+		<!-- Existing reclutation -->
+		<div class="mc-card" data-ng-repeat="reclutation in reclutations" data-ng-if="user && reclutations.length >= 1 && reclutation.location == user.location">
+		
+			<div class="mc-header">
+				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
+				<h1 class="mc-title">{{ reclutation.description }}</h1>
+				<h2 class="mc-subtitle">ID: {{ reclutation.id }}</h2>
+			</div>
+			
+			<div class="mc-content" mc-layout="list">
+				<h1 class="mc-subtitle mc-right">Players: {{ reclutation.players.length }} / {{ reclutation.maxPlayers }}</h1>
+				<div class="mc-list-item" data-ng-repeat="player in reclutation.players">
+					<p class="mc-text">{{ player }}</p>
 				</div>
 			</div>
 			
 			<div class="mc-footer">
-				<!-- <button class="mc-button mc-button-text" data-ng-click="reclutation.addPlayer(username)" data-ng-if="reclutation.players.length < 4">+1</button> -->
 				
 				<!-- Add me -->
-				<button class="mc-button mc-button-text" data-ng-click="reclutation.addPlayer(username)" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf(name) < 0">+1</button>
+				<button class="mc-button mc-button-comb" mc-action="done" data-ng-click="reclutation.addPlayer()" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf( user.name ) < 0 && !user.waiting">Add me!</button>
 				
 				<!-- Remove me -->
-				<button class="mc-button mc-button-text" data-ng-click="reclutation.removePlayer(username)" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf(name) >= 0">-1</button>
+				<button class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="reclutation.removePlayer()" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf( user.name ) >= 0 && user.waiting">Cancel</button>
 			</div>
 		</div>
 		

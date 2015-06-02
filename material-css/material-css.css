@@ -1198,8 +1198,7 @@ body[mc-layout="front"] .mc-floating{
 	display: inline-block;
 	float: left;
 	
-	width: 220px;
-	max-width: calc(100% - 20px);
+	min-width: 220px;
 	margin: 18px 10px;
 	padding: 0px;
 	
@@ -2032,8 +2031,8 @@ body[mc-layout="front"] .mc-floating{
 	height: auto;
 	padding: 0px;
 	
-	background: #ddd;
 	border: none;
+	box-sizing: border-box;
 	overflow: hidden;
 }
 .mc-card[mc-layout="left-image"] > .mc-header > img, .mc-card[mc-layout="right-image"] > .mc-header > img{
@@ -2067,6 +2066,8 @@ body[mc-layout="front"] .mc-floating{
 
 .mc-card[mc-layout="left-image"] > .mc-header{
 	float: left;
+	
+	border-right: 1px solid rgba(0, 0, 0, 0.2);
 }
 .mc-card[mc-layout="left-image"] > .mc-content, .mc-card[mc-layout="left-image"] > .mc-footer{
 	float: right;
@@ -2079,6 +2080,8 @@ body[mc-layout="front"] .mc-floating{
 
 .mc-card[mc-layout="right-image"] > .mc-header{
 	float: right;
+	
+	border-left: 1px solid rgba(0, 0, 0, 0.2);
 }
 .mc-card[mc-layout="right-image"] > .mc-content, .mc-card[mc-layout="right-image"] > .mc-footer{
 	float: left;
@@ -2116,8 +2119,6 @@ body[mc-layout="front"] .mc-floating{
 	height: 100%;
 	left: 50%;
 	top: 50%;
-	
-	background-color: #ccc;
 	
 	-webkit-transform: translate(-50%,-50%);
 	-ms-transform: translate(-50%,-50%);
@@ -4857,7 +4858,7 @@ table.mc-table .mc-table-hidden {
 		margin-left: -148px;
 	}
 
-	body[mc-layout="no-nav"] .mc-content{
+	body[mc-layout="no-nav"] > .mc-content{
 		width: 80%;
 		left: 10%;
 	}
@@ -4868,7 +4869,7 @@ table.mc-table .mc-table-hidden {
 		padding-top: 40px;	
 	}
 	
-	body[mc-layout="no-nav"] .mc-footer{
+	body[mc-layout="no-nav"] > .mc-footer{
 		width: 80%;
 		left: 10%;
 	}
