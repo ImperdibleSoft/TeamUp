@@ -1,43 +1,142 @@
-/* Se inicia la aplicación */
-var logeado = false;
-var mi_usuario = "";
-var alerta = new Array();
-alerta['favores'] = 0;
-alerta['mensajes'] = 0;
+/*	App start	*/
+/*
+var appURL = "http://lordfido.github.io/TeamUp";
+*/
 
-/* Conexión inicial, informa a la interfaz si el usuario está logeado */
-chrome.runtime.onConnect.addListener(function(estado){
-	if(estado.name == "estado"){
-		estado.onMessage.addListener(function(response){
-		
-			/* Envía el estado del usuario */
-			if(logeado == false){
-				estado.postMessage({
-					'estado': 'No',
-					'codigo': 0
-				});
-			}else{
-				estado.postMessage({
-					'estado': 'Si',
-					'codigo': 1,
-					'usuario': mi_usuario,
-					'favores': alerta['favores'],
-					'mensajes': alerta['mensajes']
-				});
-			}
+var appURL = location.host;
+
+var user = false;
+var recruitingsList = new Array();
+
+/*	Initial conection, verify logged user	*/
+chrome.runtime.onConnect.addListener(function(status){
+	if(status.name == "status"){
+		status.onMessage.addListener(function(response){
+			
+			console.log("Asking for status");
+			
+			/* Send user data */
+			status.postMessage({
+				'user': user,
+				'recruitingsList': recruitingsList
+			});
+			
+			console.log("Returning user and recruitingsList data");
+			console.log(user);
+			console.log(recruitingsList);
 		});
 	}
 });
 
-/* Conexión login, inicia sesión */
+/*	Login conection, Logs in the user	*/
 chrome.runtime.onConnect.addListener(function(login){
 	if(login.name == "login"){
 		login.onMessage.addListener(function(response){
 		
-			/* Se comparan los datos del login */
-			mi_usuario = response.usuario;
-			logeado = true;
-			obtener_novedades();
+			user = response.user;
+			getNews();
+		});
+	}
+});
+
+/* Create conection, creates a new Recruiting */
+chrome.runtime.onConnect.addListener(function(create){
+	if(create.name == "create"){
+		
+		create.onMessage.addListener(function(response){
+			
+			console.log("Getting new recruiting");
+			console.log(response.create);
+			
+			$.ajax({
+				type : 'post',
+				url : appURL +'/APIs/public.php?action=createRecruiting',
+				dataType : 'json', 
+				data : response.create,
+				success : function(response2) {
+					
+					recruitingsList.push(response);
+					
+					showNotification(response.create.id, "New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +"players");
+					getNews();
+				}
+			});
+			
+			/*	Stores the new recruiting on the list	*/
+			recruitingsList.push(response.create);
+			
+			console.log("Added to BackgroundJS recruitingsList");
+			console.log(recruitingsList);
+			
+			/*	Send data to Extension UI	*/
+			var recruitings = chrome.runtime.connect({name: "recruitings"});
+			recruitings.postMessage({
+				'recruitings': recruitingsList
+			});
+			
+			console.log("Returning recruitingsList to UI");
+			console.log(recruitingsList);
+			
+			/*	Show the notification	*/
+			showNotification(response.create.id, "New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players");
+			
+		});
+	}
+});
+
+/*	Update recruiting, updates a recruiting	*/
+chrome.runtime.onConnect.addListener(function(updateRecruiting){
+	if(updateRecruiting.name == "updateRecruiting"){
+		updateRecruiting.onMessage.addListener(function(response){
+			
+			console.log("Updating the recruiting with ID "+ response.recruiting.id);
+			
+			for(var x in recruitingsList){
+				if(response.recruiting.id == recruitingsList[x].id){
+					recruitingsList[x] = response.recruiting;
+				}
+			}
+			
+			console.log("Returning new recruitingsList to UI");
+			console.log(recruitingsList);
+			
+			updateRecruiting.postMessage({
+				'recruitingsList': recruitingsList
+			})
+			
+		});
+	}
+});
+
+/*	RemoveRecruiting connection, delete a recruiting	*/
+chrome.runtime.onConnect.addListener(function(removeRecruiting){
+	if(removeRecruiting.name == "removeRecruiting"){
+		removeRecruiting.onMessage.addListener(function(response){
+			
+			console.log("Removing recruiting with ID "+ response.id);
+			
+			for(var x in recruitingsList){
+				if(response.id == recruitingsList[x].id){
+					recruitingsList.splice( x, 1 );
+				}
+			}
+			
+			console.log("Returning new recruitingsList to UI");
+			console.log(recruitingsList);
+			
+			removeRecruiting.postMessage({
+				'recruitingsList': recruitingsList
+			})
+			
+		});
+	}
+});
+
+/*	Recruitings conection, get the recruiting list	*/
+chrome.runtime.onConnect.addListener(function(recruitings){
+	if(recruitings.name == "recruitings"){
+		recruitings.postMessage({
+			'recruitings': recruitingsList ? recruitingsList : false
 		});
 	}
 });
@@ -57,141 +156,60 @@ chrome.runtime.onConnect.addListener(function(logout){
 	}
 });
 
-/* Si hay sesión iniciada, consulta notificaciones de favores y mensajes */
-function obtener_novedades(){
-	if(mi_usuario.id_Usuario){
-		$.ajax({
-			type : 'get',
-			url : 'http://www.imperdiblesoft.com/funciones/ajax/notificaciones.php',
-			dataType : 'json', 
-			data : {
-				'usuario': mi_usuario.id_Usuario,
-				'src': 'ext'
-			},
-			success : function(response) {
-				self.noerror = true;
-				
-				console.log(mi_usuario.notificaciones);
-				
-				/* Colocar notificaciones en sus iconos */
-				/* Alerta para favores */
-				if(alerta['favores'] < response['notificaciones'] && alerta['favores'] != null && mi_usuario.notificaciones == '1'){
-					$.ajax({
-						type : 'get',
-						url : 'http://www.imperdiblesoft.com/funciones/ajax/notificaciones.php',
-						dataType : 'json', 
-						data : {
-							'usuario' : mi_usuario.id_Usuario,
-							'notificaciones' : (response['notificaciones'] - alerta['favores'])
-						},
-						success : function(response) {
-							self.noerror = true;
-							for(var x in response){
-								showNotification("Novedades en SxN", response[x]['motivo'], "http://www.imperdiblesoft.com/img/logo-sxn.png", response[x]['url']);
-							}
-						},
-						complete : function(response) {
-							// send a new ajax request when this request is finished
-							if(!self.noerror) {
-								
-								// if a connection problem occurs, try to reconnect each 5 seconds
-								setTimeout(function(){ obtener_novedades(); }, 5000);
-							}else{
-
-								// persistent connection
-								obtener_novedades();
-							}
-							self.noerror = false;
-						}
-					});
-				}
-				alerta['favores'] = response['notificaciones'];
-				
-				/* Alerta para mensajes */
-				if(alerta['mensajes'] < response['mensajes'] && alerta['mensajes'] != null && mi_usuario.notificaciones == '1'){
-					showNotification("Nuevo mensaje privado", "Tienes "+response['mensajes']+" nuevo/s mensaje/s privado/s en Solidarios por Naturaleza", "http://www.imperdiblesoft.com/img/logo-sxn.png", "index.php?seccion=mensajes");
-				}
-				alerta['mensajes'] = response['mensajes'];
-				cambiar_icono(parseInt(response['mensajes']) + parseInt(response['notificaciones']));
-			},
-			complete : function(response) {
-				// send a new ajax request when this request is finished
-				if(!self.noerror) {
-					
-					// if a connection problem occurs, try to reconnect each 5 seconds
-					setTimeout(function(){ obtener_novedades(); }, 5000);
-				}else{
-
-					// persistent connection
-					obtener_novedades();
-				}
-				self.noerror = false;
+/* Get recruiting list */
+function getNews(){
+	
+	$.ajax({
+		type : 'post',
+		url : appURL +'/APIs/public.php?action=getRecruitings',
+		dataType : 'json', 
+		data : {
+			'location': user.location
+		},
+		success : function(response) {
+			self.noerror = true;
+			
+			/* Alerta para mensajes */
+			if(response.length > recruitingsList.length){
+				/*	showNotification("New recruiting", "There are "+ response.length +" opened recruitings");	*/
 			}
-		});
-	}
+			recruitingsList = response;
+			
+			changeIcon(parseInt(response['mensajes']) + parseInt(response['notificaciones']));
+		},
+		complete : function(response) {
+			// send a new ajax request when this request is finished
+			if(!self.noerror) {
+				
+				// if a connection problem occurs, try to reconnect each 5 seconds
+				// setTimeout(function(){ getNews(); }, 5000);
+			}else{
+
+				// persistent connection
+				// getNews();
+			}
+			self.noerror = false;
+		}
+	});
 }
 
-function cambiar_icono(parametro){
-	if(parametro > 0){
-		chrome.browserAction.setBadgeText({"text": String(parametro)});
+function changeIcon(param){
+	if(param > 0){
+		chrome.browserAction.setBadgeText({"text": String(param)});
 	}else{
 		chrome.browserAction.setBadgeText({"text": ''});
 	}
 }
 
-/* Función para crear notificaciones */
-function showNotification(title, msg, icon, url_notificacion){
+/*	Creates a new Notification	*/
+function showNotification(id, title, msg){
 
-	/* Escanea las ventanas en busca de alguna abierta */
-	var ventanas = new Array();
-	var objetivo = new Array();
-	chrome.windows.getAll({"populate" : true}, function(windows){
-		for(var i = 0; i < windows.length; i++){
-			ventanas[i] = windows[i];
-		}
-		
-		/* Hay ventanas abiertas */
-		if(ventanas.length >= 1){
-			objetivo['abierto'] = true;
-			
-		/* No hay ventanas abiertas */
-		}else{
-			objetivo['abierto'] = false;
-		}
-		
-		/* Escanea las pestañas en busca de nuestra web */
-		var pestanas = new Array();
-		chrome.tabs.query({}, function(tabs){
-			for(var i = 0; i < tabs.length; i++){
-				pestanas[i] = tabs[i];
-			}
-			
-			for(var i = 0; i < pestanas.length; i++){
-				if(/imperdiblesoft/.test(pestanas[i].url)){
-					objetivo['tab_window'] = pestanas[i].windowId ;
-					objetivo['tab_id'] = pestanas[i].id;
-					objetivo['tab_index'] = pestanas[i].index;
-					objetivo['tab_url'] = pestanas[i].url;
-				}
-			}
-		
-			/* Actúa */
-			var url_absoluta = 'http://www.imperdiblesoft.com/'+url_notificacion;
-			
-			if(!objetivo['abierto'] || objetivo['abierto'] == false || !objetivo['tab_url'] || objetivo['tab_url'] != url_absoluta){
-					if(window.webkitNotifications){
-					var wkn = window.webkitNotifications;
-					var notif;
-					if(wkn.checkPermission() == 0){
-						notif = wkn.createNotification(icon, title, msg);
-						notif.onclick = function(){
-							cargar_web('http://www.imperdiblesoft.com/'+url_notificacion);
-							notif.cancel();
-						};
-						notif.show();
-					}
-				}
-			}
-		});
-	});
+	var options = {
+		"type": "basic",
+		"title": title,
+		"message": msg,
+		"iconUrl": "/images/logo_128.png"
+	}
+	var wkn = chrome.notifications;
+	var notif = wkn.create(id+"", options);
 }
