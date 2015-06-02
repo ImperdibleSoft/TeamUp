@@ -1,10 +1,7 @@
 /*	App start	*/
 
-//var appURL = "http://lordfido.github.io/TeamUp";
-var appURL = location.host;
-
 //var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action="
-var apiURL = "http://10.160.170.6/TeamUp/APIs/public.php?action="
+var apiURL = "http://dev.teamup.imperdiblesoft.com/APIs/public.php?action="
 
 var user = false;
 var recruitingsList = new Array();
@@ -183,11 +180,11 @@ function getNews(){
 			if(!self.noerror) {
 				
 				// if a connection problem occurs, try to reconnect each 5 seconds
-				// setTimeout(function(){ getNews(); }, 5000);
+				setTimeout(function(){ getNews(); }, 5000);
 			}else{
 
 				// persistent connection
-				// getNews();
+				getNews();
 			}
 			self.noerror = false;
 		}

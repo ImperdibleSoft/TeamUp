@@ -1,4 +1,8 @@
 teamUp.factory('services', function($http) {
+	
+	//var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action="
+	var apiURL = "http://dev.teamup.imperdiblesoft.com/APIs/public.php?action="
+
    var service = {};
    
     service.getLocations = function(){
