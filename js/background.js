@@ -54,8 +54,11 @@ chrome.runtime.onConnect.addListener(function(create){
 				dataType : 'json', 
 				data : response.create,
 				success : function(response2) {
-					
-					recruitingsList.push(response);
+
+					recruitingsList = new Array();
+					for(var x in response2.recruitings){
+						recruitingsList.push( response2.recruitings[x] );
+					}
 					
 					showNotification(response.create.id, "New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +"players");
 					getNews();
@@ -170,12 +173,12 @@ function getNews(){
 			self.noerror = true;
 			
 			/* Alerta para mensajes */
-			if(response.length > recruitingsList.length){
-				/*	showNotification("New recruiting", "There are "+ response.length +" opened recruitings");	*/
+			if(response.recruitings.length > recruitingsList.length){
+				showNotification("New recruitings", "There are "+ response.recruitings.length +" opened recruitings");
 			}
-			recruitingsList = response;
+			recruitingsList = response.recruitings;
 			
-			changeIcon(parseInt(response['mensajes']) + parseInt(response['notificaciones']));
+			changeIcon( recruitingsList.length );
 		},
 		complete : function(response) {
 			

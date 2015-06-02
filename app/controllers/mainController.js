@@ -2,6 +2,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
  
 	/*	Init variables	*/
 	$scope.user = false;
+	$scope.recruitingOnMyLocation = false;
 	$scope.creatingRecruiting = false;
 	$scope.recruitingsList = new Array();
 	$scope.maxPlayers = 4;
@@ -45,14 +46,13 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 					console.log("Getting the recruitingsList from BackgroundJS");
 					console.log(response.recruitings);
 					
-					
 					$scope.parseRecruitingsList(response.recruitings);
 					
 					console.log("recruitingsList parsed");
 					console.log($scope.recruitingsList);
 				});
 			}
-		})
+		});
 		
 	}
 	
@@ -168,16 +168,22 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			};
 			
 			var recru = new Recruiting(data);
+			$scope.user.waiting = false;
 			for(var y in temp.players){
 				recru.addPlayer(temp.players[y]);
+				
+				if(temp.players[y] == $scope.user.name){
+					$scope.user.waiting = true;
+				}
 			}
+			
+			if(recru.location == $user.location){
+				$scope.recruitingOnMyLocation = true;
+			}
+			
 			
 			$scope.recruitingsList.push( recru );
 		}
-	}
-	
-	$scope.debug = function(){
-		console.log($scope.recruitingsList);
 	}
 	
 	/*	Recruiting class	*/
@@ -193,13 +199,9 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			if(self.players.length < 4){
 				if(param){
 					self.players.push( param );
-					if(param == $scope.user.name){
-						$scope.user.waiting = true;
-					}
 				}
 				else{
 					self.players.push( $scope.user.name );
-					$scope.user.waiting = true;
 					
 					/* Update a recruiting	*/
 					var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
@@ -260,8 +262,6 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 					
 					$("#refresh").click();
 				});
-				
-				$scope.user.waiting = false;
 			}
 			
 			if(self.players.length <= 0){
