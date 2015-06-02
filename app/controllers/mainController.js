@@ -9,6 +9,28 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
 	
 	/*	Init function	*/
+	
+	/*	Functions declaration	*/
+	/*	Connection with BackgroundJS	*/
+	if(chrome.runtime.connect){
+		
+		/* Connect width background.js	*/
+		var status = chrome.runtime.connect({name: "status"});
+		
+		/*	Ask for conected user	*/
+		status.postMessage({
+			'status': null
+		});
+		
+		status.onMessage.addListener(function(response){
+			if(response.user){
+				$scope.user = response.user;
+				$("form[name='loginForm'] button[type='submit']").click();
+			}
+		})
+	}
+	
+	/*	Login the user	*/
 	$scope.loginUser = function(){
 		var form = $scope.loginForm;
 		
@@ -20,6 +42,27 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			
 			/*	Call the createLocation service	*/
 			/*	services.createLocation($scope.user.location);	*/
+			
+			if(chrome.runtime.connect){
+				
+				/* Connect width background.js	*/
+				var login = chrome.runtime.connect({name: "login"});
+				
+				/*	Send login data	*/
+				login.postMessage({
+					'user': $scope.user
+				});
+				
+				login.onMessage.addListener(function(response){
+					
+				});
+				
+				/*	Disconnection	*/
+				login.onDisconnect.addListener(function(event){
+					
+				});
+				
+			}
 		}
 	}
 	
@@ -50,6 +93,22 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			var temp = new Reclutation(data);
 			temp.addPlayer();
 			$scope.reclutations.push(temp);
+			
+			if(chrome.runtime.connect){
+				
+				/* Connect width background.js	*/
+				var create = chrome.runtime.connect({name: "create"});
+				
+				/*	Ask for conected user	*/
+				create.postMessage({
+					'create': temp
+				});
+				
+				create.onMessage.addListener(function(response){
+					
+				});
+			}
+			
 			$scope.cancelReclutation();
 		}
 	}
