@@ -37,7 +37,7 @@
 		</form>
 		
 		<!-- No recruiting -->
-		<div class="mc-card" data-ng-if="user && recruitingsList.length < 1 && !creatingRecruiting">
+		<div class="mc-card" data-ng-if="user && (recruitingsList.length < 1 || !recruitingOnMyLocation) && !creatingRecruiting">
 			<div class="mc-content">
 				<p class="mc-text">No active recruitings on:</p>
 				<div mc-layout="list">
@@ -83,7 +83,7 @@
 		</form>
 		
 		<!-- Existing recruiting -->
-		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList" data-ng-if="user && recruitingsList.length >= 1 && recruiting.location == user.location">
+		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location">
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
