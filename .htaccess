@@ -7,6 +7,3 @@ RewriteEngine on
 	Header always set Access-Control-Allow-Headers "X-Accept-Charset,X-Accept,Content-Type"
 </IfModule>
 
-RewriteCond %{HTTP_HOST} ^dev.imperdiblesoft.com$
-RewriteRule ^graffiti$ "http\:\/\/dev\.imperdiblesoft\.com\/#/graffiti" [R=301,L]
-
