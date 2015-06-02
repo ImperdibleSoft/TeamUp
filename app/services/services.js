@@ -8,7 +8,7 @@ teamUp.factory('services', function($http) {
     service.getLocations = function(){
    		return $http({
    			method: 'GET',
-   			url: 'APIs/data.json'
+   			url: apiURL +'getLocations'
    		});
    };
    

@@ -46,8 +46,10 @@ chrome.runtime.onConnect.addListener(function(create){
 			console.log("Getting new recruiting");
 			console.log(response.create);
 			
+			response.create.players = response.create.players.toString();
+			
 			$.ajax({
-				type : 'post',
+				method : 'POST',
 				url : apiURL +'createRecruiting',
 				dataType : 'json', 
 				data : response.create,
