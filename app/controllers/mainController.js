@@ -1,20 +1,18 @@
-teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
+teamUp.controller("mainCtrl", ['$scope', function($scope){
  
 	/*	Init variables	*/
 	$scope.user = false;
-	$scope.creatingReclutation = false;
-	$scope.reclutations = new Array();
+	$scope.creatingRecruiting = false;
+	$scope.recruitingsList = new Array();
 	$scope.maxPlayers = 4;
 	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
 	
 	/*	Init function	*/
-	
-	/*	Functions declaration	*/
 	/*	Connection with BackgroundJS	*/
 	if(chrome.runtime.connect){
 		
-		/* Connect width background.js	*/
+		/* Create status connection	*/
 		var status = chrome.runtime.connect({name: "status"});
 		
 		/*	Ask for conected user	*/
@@ -25,11 +23,40 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 		status.onMessage.addListener(function(response){
 			if(response.user){
 				$scope.user = response.user;
-				$("form[name='loginForm'] button[type='submit']").click();
+			}
+			
+			if(response.recruitingsList){
+				console.log("Getting the recruitingsList from BackgroundJS");
+				console.log(response.recruitingsList);
+				
+				$scope.parseRecruitingsList(response.recruitingsList);
+				
+				console.log("recruitingsList parsed");
+				console.log($scope.recruitingsList);
+			}
+			
+			$("#refresh").click();
+		});
+		
+		/* Create recruitings connection	*/
+		chrome.runtime.onConnect.addListener(function(recruitings){
+			if(recruitings.name == "recruitings"){
+				recruitings.onMessage.addListener(function(response){
+					console.log("Getting the recruitingsList from BackgroundJS");
+					console.log(response.recruitings);
+					
+					
+					$scope.parseRecruitingsList(response.recruitings);
+					
+					console.log("recruitingsList parsed");
+					console.log($scope.recruitingsList);
+				});
 			}
 		})
+		
 	}
 	
+	/*	Functions declaration	*/
 	/*	Login the user	*/
 	$scope.loginUser = function(){
 		var form = $scope.loginForm;
@@ -41,8 +68,6 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			}
 			
 			/*	Call the createLocation service	*/
-			/*	services.createLocation($scope.user.location);	*/
-			
 			if(chrome.runtime.connect){
 				
 				/* Connect width background.js	*/
@@ -66,9 +91,9 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 		}
 	}
 	
-	/*	Create Reclutation	*/
-	$scope.createReclutation = function(){
-		$scope.creatingReclutation = true;
+	/*	Create Recruiting	*/
+	$scope.createRecruiting = function(){
+		$scope.creatingRecruiting = true;
 	}
 	$scope.decreaseMaxPlayers = function(){
 		$scope.maxPlayers--;
@@ -76,23 +101,25 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	$scope.increaseMaxPlayers = function(){
 		$scope.maxPlayers++;
 	}
-	$scope.cancelReclutation = function(){
-		$scope.creatingReclutation = false;
+	$scope.cancelRecruiting = function(){
+		$scope.creatingRecruiting = false;
+		$scope.recruitingForm.$submitted = false;
+		$scope.recruitingForm.$dirty = false;
+		$scope.recruitingForm.$pristine = true;
 		
 		$scope.description = "";
 		$scope.maxPlayers = 4;
 	}
-	$scope.saveReclutation = function(){
-		var form = $scope.reclutationForm;
+	$scope.saveRecruiting = function(){
+		var form = $scope.recruitingForm;
 		if(form.$valid){
 			var data = {
 				"description": form.description.$modelValue,
 				"maxPlayers": $scope.maxPlayers,
 				"location": $scope.user.location
 			}
-			var temp = new Reclutation(data);
+			var temp = new Recruiting(data);
 			temp.addPlayer();
-			$scope.reclutations.push(temp);
 			
 			if(chrome.runtime.connect){
 				
@@ -104,27 +131,76 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 					'create': temp
 				});
 				
+				console.log("Sending new recruiting");
+				console.log(temp);
+				
 				create.onMessage.addListener(function(response){
 					
+					if(response.recruitingsList){
+						console.log("Getting the recruitingsList from BackgroundJS");
+						console.log(response.recruitings);
+						
+						$scope.parseRecruitingsList(response.recruitings);
+						
+						console.log("recruitingsList parsed");
+						console.log($scope.recruitingsList);
+					}
+					
+					$("#refresh").click();
 				});
 			}
 			
-			$scope.cancelReclutation();
+			$scope.cancelRecruiting();
 		}
 	}
 	
-	var Reclutation = function(data){
+	/*	Parse a list of objects into a list of Recruitings	*/
+	$scope.parseRecruitingsList = function(param){
+		$scope.recruitingsList = new Array();
+		for(var x in param){
+			var temp = param[x];
+			var data = {
+				"id": temp.id ? temp.id : false,
+				"description": temp.description,
+				"location": temp.location,
+				"maxPlayers": temp.maxPlayers,
+				"players": temp.players
+			};
+			
+			var recru = new Recruiting(data);
+			for(var y in temp.players){
+				recru.addPlayer(temp.players[y]);
+			}
+			
+			$scope.recruitingsList.push( recru );
+		}
+	}
+	
+	$scope.debug = function(){
+		console.log($scope.recruitingsList);
+	}
+	
+	/*	Recruiting class	*/
+	var Recruiting = function(data){
 		var self = this
-		this.id = parseInt( Math.random() * 1000000 );
+		this.id = data.id ? data.id : parseInt( Math.random() * 1000000 );
 		this.description = data.description;
 		this.location = data.location;
 		this.maxPlayers = data.maxPlayers;
 		this.players = new Array();
 		
-		this.addPlayer = function(){
+		this.addPlayer = function(param){
 			if(self.players.length < 4){
-				self.players.push( $scope.user.name );
-				$scope.user.waiting = true;
+				if(param){
+					self.players.push( param );
+					if(param == $scope.user.name){
+						$scope.user.waiting = true;
+					}
+				}
+				else{
+					self.players.push( $scope.user.name );
+					$scope.user.waiting = true;
+				}
 			}
 		}
 		
@@ -135,9 +211,9 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			}
 			
 			if(self.players.length <= 0){
-				for(var x in $scope.reclutations){
-					if($scope.reclutations[x].id == self.id){
-						$scope.reclutations.splice( x, 1 );
+				for(var x in $scope.recruitingsList){
+					if($scope.recruitingsList[x].id == self.id){
+						$scope.recruitingsList.splice( x, 1 );
 					}
 				}
 			}

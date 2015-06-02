@@ -1,5 +1,5 @@
-<div class="mc-right" data-ng-if="user && !user.waiting && !creatingReclutation">
-	<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-click="createReclutation()">Create</button>
+<div class="mc-right" data-ng-if="user && !user.waiting && !creatingRecruiting">
+	<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-click="createRecruiting()">Create</button>
 </div>
 
 <div class="mc-layout" mc-layout="1">
@@ -32,10 +32,10 @@
 			</div>
 		</form>
 		
-		<!-- No reclutation -->
-		<div class="mc-card" data-ng-if="user && reclutations.length < 1 && !creatingReclutation">
+		<!-- No recruiting -->
+		<div class="mc-card" data-ng-if="user && recruitingsList.length < 1 && !creatingRecruiting">
 			<div class="mc-content">
-				<p class="mc-text">No active reclutations on:</p>
+				<p class="mc-text">No active recruitings on:</p>
 				<div mc-layout="list">
 					<div class="mc-list-item" mc-action="location">
 						<p class="mc-title">{{ user.location }}</p>
@@ -44,19 +44,19 @@
 			</div>
 		</div>
 		
-		<!-- New Reclutation -->
-		<form class="mc-card" data-ng-show="user && creatingReclutation" data-ng-submit="saveReclutation()" name="reclutationForm" role="form" novalidate>
+		<!-- New Recruiting -->
+		<form class="mc-card" data-ng-show="user && creatingRecruiting" data-ng-submit="saveRecruiting()" name="recruitingForm" role="form" novalidate>
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
-				<h1 class="mc-title">New reclutation</h1>
+				<h1 class="mc-title">New recruiting</h1>
 			</div>
 			
 			<div class="mc-content">
 				<span class="mc-input" style="width: calc(100% - 20px)">
 					<input type="text" name="description" data-ng-model="description" required />
 					<label class="mc-label">Activity / Description</label>
-					<span class="mc-input-message mc-color-red" data-ng-if="!reclutationForm.description.$valid && (reclutationForm.description.$dirty || reclutationForm.$submitted)">Please, enter a valid activity or description</span>
+					<span class="mc-input-message mc-color-red" data-ng-if="!recruitingForm.description.$valid && (recruitingForm.description.$dirty || recruitingForm.$submitted)">Please, enter a valid activity or description</span>
 				</span>
 				
 				<span class="mc-input" style="width: calc(100% - 20px)">
@@ -74,22 +74,22 @@
 			
 			<div class="mc-footer">
 				<button type="submit" class="mc-button mc-button-comb" mc-action="done">Create</button>
-				<button type="button" class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="cancelReclutation()">Cancel</button>
+				<button type="button" class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="cancelRecruiting()">Cancel</button>
 			</div>
 		</form>
 		
-		<!-- Existing reclutation -->
-		<div class="mc-card" data-ng-repeat="reclutation in reclutations" data-ng-if="user && reclutations.length >= 1 && reclutation.location == user.location">
+		<!-- Existing recruiting -->
+		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList" data-ng-if="user && recruitingsList.length >= 1 && recruiting.location == user.location">
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
-				<h1 class="mc-title">{{ reclutation.description }}</h1>
-				<h2 class="mc-subtitle">ID: {{ reclutation.id }}</h2>
+				<h1 class="mc-title">{{ recruiting.description }}</h1>
+				<h2 class="mc-subtitle">ID: {{ recruiting.id }}</h2>
 			</div>
 			
 			<div class="mc-content" mc-layout="list">
-				<h1 class="mc-subtitle mc-right">Players: {{ reclutation.players.length }} / {{ reclutation.maxPlayers }}</h1>
-				<div class="mc-list-item" data-ng-repeat="player in reclutation.players">
+				<h1 class="mc-subtitle mc-right">Players: {{ recruiting.players.length }} / {{ recruiting.maxPlayers }}</h1>
+				<div class="mc-list-item" data-ng-repeat="player in recruiting.players">
 					<p class="mc-text">{{ player }}</p>
 				</div>
 			</div>
@@ -97,12 +97,14 @@
 			<div class="mc-footer">
 				
 				<!-- Add me -->
-				<button class="mc-button mc-button-comb" mc-action="done" data-ng-click="reclutation.addPlayer()" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf( user.name ) < 0 && !user.waiting">Add me!</button>
+				<button class="mc-button mc-button-comb" mc-action="done" data-ng-click="recruiting.addPlayer()" data-ng-if="recruiting.players.length < 4 && recruiting.players.indexOf( user.name ) < 0 && !user.waiting">Add me!</button>
 				
 				<!-- Remove me -->
-				<button class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="reclutation.removePlayer()" data-ng-if="reclutation.players.length < 4 && reclutation.players.indexOf( user.name ) >= 0 && user.waiting">Cancel</button>
+				<button class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="recruiting.removePlayer()" data-ng-if="recruiting.players.length < 4 && recruiting.players.indexOf( user.name ) >= 0 && user.waiting">Cancel</button>
 			</div>
 		</div>
 		
 	</div>
 </div>
+
+<button id="refresh" style="display: none;" class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="refresh" data-ng-click="debug()">Refresh</button>

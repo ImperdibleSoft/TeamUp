@@ -1,17 +1,29 @@
 /*	App start	*/
-var appURL = "http://lordfido.github.io/TeamUp"
+/*
+var appURL = "http://lordfido.github.io/TeamUp";
+*/
+
+var appURL = location.host;
+
 var user = false;
-var reclutations = false;
+var recruitingsList = new Array();
 
 /*	Initial conection, verify logged user	*/
 chrome.runtime.onConnect.addListener(function(status){
 	if(status.name == "status"){
 		status.onMessage.addListener(function(response){
-		
+			
+			console.log("Asking for status");
+			
 			/* Send user data */
 			status.postMessage({
-				'user': user
+				'user': user,
+				'recruitingsList': recruitingsList
 			});
+			
+			console.log("Returning user and recruitingsList data");
+			console.log(user);
+			console.log(recruitingsList);
 		});
 	}
 });
@@ -27,25 +39,56 @@ chrome.runtime.onConnect.addListener(function(login){
 	}
 });
 
-/* Create conection, creates a new Reclutation */
+/* Create conection, creates a new Recruiting */
 chrome.runtime.onConnect.addListener(function(create){
 	if(create.name == "create"){
 		
 		create.onMessage.addListener(function(response){
 			
+			console.log("Getting new recruiting");
+			console.log(response.create);
+			
 			$.ajax({
 				type : 'post',
-				url : appURL +'/APIs/public.php?action=createReclutation',
+				url : appURL +'/APIs/public.php?action=createRecruiting',
 				dataType : 'json', 
 				data : response.create,
 				success : function(response2) {
-					showNotification(response.create.id, "New Reclutation", "You have created a new reclutation named "+ response.create.description +", with "+ response.create.maxPlayers +"players");
+					
+					recruitingsList.push(response);
+					
+					showNotification(response.create.id, "New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +"players");
 					getNews();
 				}
 			});
 			
-			showNotification(response.create.id, "New Reclutation", "You have created a new reclutation named "+ response.create.description +", with "+ response.create.maxPlayers +"players");
+			/*	Stores the new recruiting on the list	*/
+			recruitingsList.push(response.create);
 			
+			console.log("Added to BackgroundJS recruitingsList");
+			console.log(recruitingsList);
+			
+			/*	Send data to Extension UI	*/
+			var recruitings = chrome.runtime.connect({name: "recruitings"});
+			recruitings.postMessage({
+				'recruitings': recruitingsList
+			});
+			
+			console.log("Returning recruitingsList to UI");
+			console.log(recruitingsList);
+			
+			/*	Show the notification	*/
+			showNotification(response.create.id, "New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players");
+			
+		});
+	}
+});
+
+/*	Recruitings conection, get the recruitigns list	*/
+chrome.runtime.onConnect.addListener(function(recruitings){
+	if(recruitings.name == "recruitings"){
+		recruitings.postMessage({
+			'recruitings': recruitingsList ? recruitingsList : false
 		});
 	}
 });
@@ -65,11 +108,12 @@ chrome.runtime.onConnect.addListener(function(logout){
 	}
 });
 
-/* Get reclutation list */
+/* Get recruiting list */
 function getNews(){
+	
 	$.ajax({
 		type : 'post',
-		url : appURL +'/APIs/public.php?action=getReclutations',
+		url : appURL +'/APIs/public.php?action=getRecruitings',
 		dataType : 'json', 
 		data : {
 			'location': user.location
@@ -78,10 +122,11 @@ function getNews(){
 			self.noerror = true;
 			
 			/* Alerta para mensajes */
-			if(response.length > reclutations.length){
-				/*	showNotification("New reclutation", "There are "+ response.length +" opened reclutations");	*/
+			if(response.length > recruitingsList.length){
+				/*	showNotification("New recruiting", "There are "+ response.length +" opened recruitings");	*/
 			}
-			reclutations = response;
+			recruitingsList = response;
+			
 			changeIcon(parseInt(response['mensajes']) + parseInt(response['notificaciones']));
 		},
 		complete : function(response) {
@@ -89,11 +134,11 @@ function getNews(){
 			if(!self.noerror) {
 				
 				// if a connection problem occurs, try to reconnect each 5 seconds
-				setTimeout(function(){ getNews(); }, 5000);
+				// setTimeout(function(){ getNews(); }, 5000);
 			}else{
 
 				// persistent connection
-				getNews();
+				// getNews();
 			}
 			self.noerror = false;
 		}
