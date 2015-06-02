@@ -37,7 +37,7 @@
 			case "createLocation":
 			
 				/* Create a location	*/
-				$sql = "INSERT INTO locations (name) VALUES ('". $POST->name ."')";
+				$sql = "INSERT INTO locations (name) VALUES ('". $POST['name'] ."')";
 				$resul = mysqli_query($conexion, $sql);
 				if(!$resul){
 					$error = mysqli_error($conexion);
@@ -69,7 +69,7 @@
 			case "createRecruiting":
 			
 				/*	Create a new Recruiting	*/
-				$sql = "INSERT INTO recruitings (id_recruiting, description, location, maxPlayers, players) VALUES (". $POST->id .", '". $POST->description ."', '". $POST->location ."', ". $POST->maxPlayers .", '". $POST->players ."')";
+				$sql = "INSERT INTO recruitings (id_recruiting, description, location, maxPlayers, players) VALUES (". $POST['id'] .", '". $POST['description'] ."', '". $POST['location'] ."', ". $POST['maxPlayers'] .", '". $POST['players'] ."')";
 				$resul = mysqli_query($conexion, $sql);
 				if(!$resul){
 					$error = mysqli_error($conexion);
@@ -98,7 +98,7 @@
 			case "updateRecruiting":
 			
 				/*	Update a particular recruiting	*/
-				$sql = "UPDATE recruitings SET players='". $POST->players ."' WHERE id_recruiting=". $POST->id;
+				$sql = "UPDATE recruitings SET players='". $POST['players'] ."' WHERE id_recruiting=". $POST['id'];
 				$resul = mysqli_query($conexion, $sql);
 				if(!$resul){
 					$error = mysqli_error($conexion);
