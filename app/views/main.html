@@ -21,9 +21,13 @@
 				</span>
 				
 				<span class="mc-input" style="width: calc(100% - 20px)">
-					<input type="text" name="userLocation" data-ng-model="userLocation" data-ng-pattern="officePattern" required />
+					<input type="text" name="userLocation" data-ng-model="userLocation" data-ng-pattern="officePattern" required auto-complete />
 					<label class="mc-label">Company - Location</label>
 					<span class="mc-input-message mc-color-red" data-ng-if="!loginForm.userLocation.$valid && (loginForm.userLocation.$dirty || loginForm.$submitted)">Please, enter a valid office name</span>
+					
+					<div id="locationSuggestions" class="mc-autocomplete" mc-layout="list" style="max-height: 250px; overflow-x: hidden; overflow-y: auto; display: none;">
+						
+					</div>
 				</span>
 			</div>
 			

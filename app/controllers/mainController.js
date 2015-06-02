@@ -1,4 +1,4 @@
-teamUp.controller("mainCtrl", ['$scope', function($scope){
+teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
  
 	/*	Init variables	*/
 	$scope.user = false;
@@ -6,7 +6,7 @@ teamUp.controller("mainCtrl", ['$scope', function($scope){
 	$scope.recruitingsList = new Array();
 	$scope.maxPlayers = 4;
 	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
-	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
+	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;	
 	
 	/*	Init function	*/
 	/*	Connection with BackgroundJS	*/
