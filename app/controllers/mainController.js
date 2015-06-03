@@ -2,6 +2,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
  
 	/*	Init variables	*/
 	$scope.user = false;
+	$scope.waiting = false;
 	$scope.recruitingOnMyLocation = false;
 	$scope.creatingRecruiting = false;
 	$scope.recruitingsList = new Array();
@@ -11,7 +12,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	
 	/*	Init function	*/
 	/*	Connection with BackgroundJS	*/
-	if(chrome.runtime.connect){
+	if(chrome && chrome.runtime && chrome.runtime.connect){
 		
 		/* Create status connection	*/
 		var status = chrome.runtime.connect({name: "status"});
@@ -53,7 +54,6 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 				});
 			}
 		});
-		
 	}
 	
 	/*	Functions declaration	*/
@@ -68,7 +68,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			}
 			
 			/*	Call the createLocation service	*/
-			if(chrome.runtime.connect){
+			if(chrome && chrome.runtime && chrome.runtime.connect){
 				
 				/* Connect width background.js	*/
 				var login = chrome.runtime.connect({name: "login"});
@@ -121,7 +121,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			var temp = new Recruiting(data);
 			temp.addPlayer();
 			
-			if(chrome.runtime.connect){
+			if(chrome && chrome.runtime && chrome.runtime.connect){
 				
 				/* Connect width background.js	*/
 				var create = chrome.runtime.connect({name: "create"});
@@ -156,6 +156,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	
 	/*	Parse a list of objects into a list of Recruitings	*/
 	$scope.parseRecruitingsList = function(param){
+		$scope.waiting = false;
 		$scope.recruitingsList = new Array();
 		for(var x in param){
 			var temp = param[x];
@@ -169,19 +170,17 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 			};
 			
 			var recru = new Recruiting(data);
-			$scope.user.waiting = false;
 			for(var y in temp.players){
 				recru.addPlayer(temp.players[y]);
 				
 				if(temp.players[y] == $scope.user.name){
-					$scope.user.waiting = true;
+					$scope.waiting = true;
 				}
 			}
 			
 			if(recru.location == $scope.user.location){
 				$scope.recruitingOnMyLocation = true;
 			}
-			
 			
 			$scope.recruitingsList.push( recru );
 		}
@@ -205,12 +204,48 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 				else{
 					self.players.push( $scope.user.name );
 					
+					if(chrome && chrome.runtime && chrome.runtime.connect){
+						
+						/* Update a recruiting	*/
+						var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
+					
+						console.log("Sending updated recruiting to BackgroundJS");
+						console.log(self);
+						
+						/*	Send the current recruiting	*/
+						updateRecruiting.postMessage({
+							'recruiting': self
+						});
+						
+						updateRecruiting.onMessage.addListener(function(response){
+							if(response.recruitingsList){
+								console.log("Getting the recruitingsList from BackgroundJS");
+								console.log(response.recruitingsList);
+								
+								$scope.parseRecruitingsList(response.recruitingsList);
+								
+								console.log("recruitingsList parsed");
+								console.log($scope.recruitingsList);
+							}
+							
+							$("#refresh").click();
+						});
+					}
+				}
+			}
+		}
+		
+		this.removePlayer = function(){
+			if(self.players.indexOf( $scope.user.name ) >= 0){
+				self.players.splice( self.players.indexOf( $scope.user.name ), 1 );
+				
+				if(chrome && chrome.runtime && chrome.runtime.connect){
 					/* Update a recruiting	*/
 					var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
-				
+					
 					console.log("Sending updated recruiting to BackgroundJS");
 					console.log(self);
-					
+						
 					/*	Send the current recruiting	*/
 					updateRecruiting.postMessage({
 						'recruiting': self
@@ -229,74 +264,41 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 						
 						$("#refresh").click();
 					});
-				
 				}
-				
-				
-			}
-		}
-		
-		this.removePlayer = function(){
-			if(self.players.indexOf( $scope.user.name ) >= 0){
-				self.players.splice( self.players.indexOf( $scope.user.name ), 1 );
-				
-				/* Update a recruiting	*/
-				var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
-				
-				console.log("Sending updated recruiting to BackgroundJS");
-				console.log(self);
-				
-				/*	Send the current recruiting	*/
-				updateRecruiting.postMessage({
-					'recruiting': self
-				});
-				
-				updateRecruiting.onMessage.addListener(function(response){
-					if(response.recruitingsList){
-						console.log("Getting the recruitingsList from BackgroundJS");
-						console.log(response.recruitingsList);
-						
-						$scope.parseRecruitingsList(response.recruitingsList);
-						
-						console.log("recruitingsList parsed");
-						console.log($scope.recruitingsList);
-					}
-					
-					$("#refresh").click();
-				});
 			}
 			
 			if(self.players.length <= 0){
 				
-				/* Create status connection	*/
-				var removeRecruiting = chrome.runtime.connect({name: "removeRecruiting"});
-				
-				/*	Ask for conected user	*/
-				removeRecruiting.postMessage({
-					'id': self.id
-				});
-				
-				removeRecruiting.onMessage.addListener(function(response){
-					if(response.recruitingsList){
-						console.log("Getting the recruitingsList from BackgroundJS");
-						console.log(response.recruitingsList);
-						
-						$scope.parseRecruitingsList(response.recruitingsList);
-						
-						console.log("recruitingsList parsed");
-						console.log($scope.recruitingsList);
-					}
+				if(chrome && chrome.runtime && chrome.runtime.connect){
 					
-					$("#refresh").click();
-				});
+					/* Create status connection	*/
+					var removeRecruiting = chrome.runtime.connect({name: "removeRecruiting"});
+					
+					/*	Ask for conected user	*/
+					removeRecruiting.postMessage({
+						'id': self.id
+					});
+					
+					removeRecruiting.onMessage.addListener(function(response){
+						if(response.recruitingsList){
+							console.log("Getting the recruitingsList from BackgroundJS");
+							console.log(response.recruitingsList);
+							
+							$scope.parseRecruitingsList(response.recruitingsList);
+							
+							console.log("recruitingsList parsed");
+							console.log($scope.recruitingsList);
+						}
+						
+						$("#refresh").click();
+					});
+				}
 			}
 		}
 	};
 	
 	var formatDate = function(param){
-		console.log(param);
 		var newDate = param.substring(11, 16);
-		console.log(newDate);
 		
 		return newDate;
 	}

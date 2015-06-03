@@ -1,7 +1,8 @@
 /*	App start	*/
 
-//var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action="
-var apiURL = "http://dev.teamup.imperdiblesoft.com/APIs/public.php?action="
+	//var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
+	//var apiURL = "http://dev.teamup.imperdiblesoft.com/APIs/public.php?action=";
+	var apiURL = "http://10.160.170.6/TeamUp/APIs/public.php?action=";
 
 var user = false;
 var recruitingsList = new Array();
@@ -96,19 +97,39 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 			
 			console.log("Updating the recruiting with ID "+ response.recruiting.id);
 			
-			for(var x in recruitingsList){
-				if(response.recruiting.id == recruitingsList[x].id){
-					recruitingsList[x] = response.recruiting;
+			response.recruiting.players = response.recruiting.players.toString();
+			
+			var data = {
+				"id": response.recruiting.id,
+				"description": response.recruiting.description,
+				"location": response.recruiting.location,
+				"maxPlayers": response.recruiting.maxPlayers,
+				"players": response.recruiting.players
+			};
+			
+			$.ajax({
+				type : 'post',
+				url : apiURL +'updateRecruiting',
+				dataType : 'json', 
+				data : JSON.stringify(data),
+				success : function(response) {
+					self.noerror = true;
+					
+					recruitingsList = new Array();
+					for(var x in response.recruitings){
+						response.recruitings[x].id = response.recruitings[x].id_recruiting;
+						response.recruitings[x].players = response.recruitings[x].players.split(",");
+						recruitingsList.push( response.recruitings[x] );
+					}
+					
+					console.log("Returning new recruitingsList to UI");
+					console.log(recruitingsList);
+					
+					updateRecruiting.postMessage({
+						'recruitingsList': recruitingsList
+					});
 				}
-			}
-			
-			console.log("Returning new recruitingsList to UI");
-			console.log(recruitingsList);
-			
-			updateRecruiting.postMessage({
-				'recruitingsList': recruitingsList
-			})
-			
+			});
 		});
 	}
 });
@@ -120,19 +141,35 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 			
 			console.log("Removing recruiting with ID "+ response.id);
 			
-			for(var x in recruitingsList){
-				if(response.id == recruitingsList[x].id){
-					recruitingsList.splice( x, 1 );
+			var data = {
+				"id": response.id,
+				"location": user.location
+			};
+			
+			$.ajax({
+				type : 'post',
+				url : apiURL +'removeRecruiting',
+				dataType : 'json', 
+				data : JSON.stringify(data),
+				success : function(response) {
+					self.noerror = true;
+					
+					recruitingsList = new Array();
+					for(var x in response.recruitings){
+						response.recruitings[x].id = response.recruitings[x].id_recruiting;
+						response.recruitings[x].players = response.recruitings[x].players.split(",");
+						recruitingsList.push( response.recruitings[x] );
+					}
+					
+					console.log("Returning new recruitingsList to UI");
+					console.log(recruitingsList);
+							
+					removeRecruiting.postMessage({
+						'recruitingsList': recruitingsList
+					});
 				}
-			}
-			
-			console.log("Returning new recruitingsList to UI");
-			console.log(recruitingsList);
-			
-			removeRecruiting.postMessage({
-				'recruitingsList': recruitingsList
-			})
-			
+			});
+		
 		});
 	}
 });

@@ -1,4 +1,4 @@
-<div class="mc-right" data-ng-if="user && !user.waiting && !creatingRecruiting">
+<div class="mc-right" data-ng-if="user && !waiting && !creatingRecruiting">
 	<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-click="createRecruiting()">Create</button>
 </div>
 
@@ -83,7 +83,7 @@
 		</form>
 		
 		<!-- Existing recruiting -->
-		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location">
+		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting">
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
@@ -101,10 +101,10 @@
 			<div class="mc-footer">
 				
 				<!-- Add me -->
-				<button class="mc-button mc-button-comb" mc-action="done" data-ng-click="recruiting.addPlayer()" data-ng-if="recruiting.players.length < 4 && recruiting.players.indexOf( user.name ) < 0 && !user.waiting">Add me!</button>
+				<button class="mc-button mc-button-comb" mc-action="done" data-ng-click="recruiting.addPlayer()" data-ng-if="recruiting.players.length < recruiting.maxPlayers && recruiting.players.indexOf( user.name ) < 0 && !waiting">Add me!</button>
 				
 				<!-- Remove me -->
-				<button class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="recruiting.removePlayer()" data-ng-if="recruiting.players.length < 4 && recruiting.players.indexOf( user.name ) >= 0 && user.waiting">Cancel</button>
+				<button class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="recruiting.removePlayer()" data-ng-if="recruiting.players.length < recruiting.maxPlayers && recruiting.players.indexOf( user.name ) >= 0 && waiting">Cancel</button>
 			</div>
 		</div>
 		
