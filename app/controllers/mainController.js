@@ -105,6 +105,11 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 		}
 	}
 	
+	/*	Updates the list view	*/
+	$scope.updateView = function(){
+		
+	}
+	
 	/*	Create Recruiting	*/
 	$scope.createRecruiting = function(){
 		$scope.creatingRecruiting = true;
@@ -189,6 +194,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 				
 				if(temp.players[y] == $scope.user.name){
 					$scope.waiting = true;
+					recru.myRecruiting = true;
 				}
 			}
 			
@@ -209,6 +215,7 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 		this.maxPlayers = data.maxPlayers;
 		this.players = new Array();
 		this.date = data.date ? formatDate(data.date) : "0000-00-00 00:00:00";
+		this.myRecruiting = data.myRecruiting ? data.myRecruiting : false;
 		
 		this.addPlayer = function(param){
 			if(self.players.length < 4){

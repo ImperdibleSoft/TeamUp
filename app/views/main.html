@@ -1,7 +1,18 @@
+<!-- Create Recruiting button -->
 <div class="mc-right" data-ng-if="user && !waiting && !creatingRecruiting">
 	<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-click="createRecruiting()">Create</button>
 </div>
 
+<!-- View all recruitings -->
+<label class="mc-switcher" data-ng-show="waiting">
+	<input type="checkbox" data-ng-model="viewAllRecruitings" data-ng-change="updateView()" />
+	<div class="mc-switch-bg" >
+		<div class="mc-switch" ></div>
+	</div>
+	<span class="mc-label">View all recruitings</span>
+</label>
+
+<!-- Recruiting list or Login Form -->
 <div class="mc-layout" mc-layout="1">
 	<div class="mc-layout" mc-layout-size="biggest">
 		
@@ -83,7 +94,7 @@
 		</form>
 		
 		<!-- Existing recruiting -->
-		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting">
+		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting )">
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
@@ -107,7 +118,6 @@
 				<button class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="recruiting.removePlayer()" data-ng-if="recruiting.players.length < recruiting.maxPlayers && recruiting.players.indexOf( user.name ) >= 0 && waiting">Cancel</button>
 			</div>
 		</div>
-		
 	</div>
 </div>
 
