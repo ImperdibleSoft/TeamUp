@@ -7,6 +7,7 @@
 
 var user = false;
 var recruitingsList = new Array();
+var viewAllRecruitingsOption = false;
 
 /*	Initial conection, verify logged user	*/
 chrome.runtime.onConnect.addListener(function(status){
@@ -18,12 +19,24 @@ chrome.runtime.onConnect.addListener(function(status){
 			/* Send user data */
 			status.postMessage({
 				'user': user,
-				'recruitingsList': recruitingsList
+				'recruitingsList': recruitingsList,
+				'viewAllRecruitings': viewAllRecruitingsOption
 			});
 			
 			console.log("Returning user and recruitingsList data");
 			console.log(user);
 			console.log(recruitingsList);
+		});
+	}
+});
+
+/*	viewAllRecruitings connection, change the user preference	*/
+chrome.runtime.onConnect.addListener(function(viewAllRecruitings){
+	if(viewAllRecruitings.name == "viewAllRecruitings"){
+		viewAllRecruitings.onMessage.addListener(function(response){
+			
+			console.log("Changing user preference. viewAllRecruitings="+ response.viewAllRecruitings);
+			viewAllRecruitingsOption = response.viewAllRecruitings;
 		});
 	}
 });

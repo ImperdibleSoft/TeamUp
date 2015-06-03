@@ -7,6 +7,13 @@ teamUp.factory('services', function($http) {
 
    var service = {};
    
+	service.getAppVersion = function(param){
+		return $http({
+			method: 'GET',
+			url: param ? '../manifest.json' : 'manifest.json'
+		});
+	};
+	
     service.getLocations = function(){
    		return $http({
    			method: 'GET',

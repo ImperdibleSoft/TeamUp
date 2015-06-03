@@ -2,7 +2,7 @@
 
 <html ng-app="teamUp" ng-csp="" style="min-width: 300px;">
 	<head>
-		<title>Team Up</title>
+		<title>Team Up!</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		
         <link rel="stylesheet" type="text/css" href="js/angular-csp.css">
@@ -20,18 +20,18 @@
         </header>
 
 		<section class="mc-content mc-untabbed" data-ng-view=""></section>
+		<section class="mc-footer">
+			<p class="mc-note">Team Up! v<span id="appVersion"></span> | Created by <a href="http://www.imperdiblesoft.com" target="_blank">ImperdibleSoft</a></p>
+		</section>
 		
-    	<script src="js/angular.min.js"></script>
-    	<script src="js/angular-route.min.js"></script>
         <script src="js/jquery.min.js"></script>
         <script src="material-css/material-css.js"></script>
+    	<script src="js/angular.min.js"></script>
+    	<script src="js/angular-route.min.js"></script>
 
     	<script src="app/app.js"></script>
-
     	<script src="app/controllers/mainController.js"></script>
-		
     	<script src="app/directives/autocomplete.js"></script>
-        
         <script src="app/services/services.js"></script>
 	</body>
 </html>

@@ -1,6 +1,8 @@
 teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
  
 	/*	Init variables	*/
+	var locations;
+	$scope.appVersion = "";
 	$scope.user = false;
 	$scope.waiting = false;
 	$scope.recruitingOnMyLocation = false;
@@ -10,12 +12,18 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
 	
-	var locations;
+	/*	Init function	*/
+	/*	Get AppVersion	*/
+	services.getAppVersion().success(function(response){
+		$scope.appVersion = response.version;
+		$("#appVersion").html($scope.appVersion);
+	});
+	
+	/*	Get Locations	*/
 	services.getLocations().success(function(response){
 		locations = response.locations;
 	});
 	
-	/*	Init function	*/
 	/*	Connection with BackgroundJS	*/
 	if(chrome && chrome.runtime && chrome.runtime.connect){
 		
@@ -40,6 +48,10 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 				
 				console.log("recruitingsList parsed");
 				console.log($scope.recruitingsList);
+			}
+			
+			if(response.viewAllRecruitings){
+				$scope.viewAllRecruitings = response.viewAllRecruitings;
 			}
 			
 			$("#refresh").click();
@@ -106,7 +118,21 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	}
 	
 	/*	Updates the list view	*/
-	$scope.updateView = function(){
+	$scope.updateView = function(e){
+		if(chrome && chrome.runtime && chrome.runtime.connect){
+			
+			/* Create status connection	*/
+			var viewAllRecruitings = chrome.runtime.connect({name: "viewAllRecruitings"});
+			
+			/*	Ask for conected user	*/
+			viewAllRecruitings.postMessage({
+				'viewAllRecruitings': e.viewAllRecruitings
+			});
+			
+			viewAllRecruitings.onMessage.addListener(function(response){
+				
+			});
+		}
 		
 	}
 	
