@@ -10,6 +10,11 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
 	
+	var locations;
+	services.getLocations().success(function(response){
+		locations = response.locations;
+	});
+	
 	/*	Init function	*/
 	/*	Connection with BackgroundJS	*/
 	if(chrome && chrome.runtime && chrome.runtime.connect){
@@ -61,21 +66,30 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 	$scope.loginUser = function(){
 		var form = $scope.loginForm;
 		
+		
 		if(form.$valid){
 			$scope.user = {
 				"name": form.userName.$modelValue,
-				"location": form.userLocation.$modelValue
+				"location": form.userLocation.$viewValue
 			}
 			
 			/*	Call the createLocation service	*/
 			if(chrome && chrome.runtime && chrome.runtime.connect){
+				
+				var existingLocation = false;
+				for(var x in locations){
+					if( locations[x].name ==  $scope.user.location ){
+						existingLocation = true;
+					}
+				}
 				
 				/* Connect width background.js	*/
 				var login = chrome.runtime.connect({name: "login"});
 				
 				/*	Send login data	*/
 				login.postMessage({
-					'user': $scope.user
+					'user': $scope.user,
+					'createLocation': !existingLocation
 				});
 				
 				login.onMessage.addListener(function(response){

@@ -3,6 +3,7 @@
 	//var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
 	//var apiURL = "http://dev.teamup.imperdiblesoft.com/APIs/public.php?action=";
 	var apiURL = "http://10.160.170.6/TeamUp/APIs/public.php?action=";
+	//var apiURL = "http://localhost/TeamUp/APIs/public.php?action=";
 
 var user = false;
 var recruitingsList = new Array();
@@ -31,8 +32,17 @@ chrome.runtime.onConnect.addListener(function(status){
 chrome.runtime.onConnect.addListener(function(login){
 	if(login.name == "login"){
 		login.onMessage.addListener(function(response){
-		
 			user = response.user;
+			
+			if(response.createLocation){
+				$.ajax({
+					method : 'POST',
+					url : apiURL +'createLocation',
+					dataType : 'json', 
+					data : JSON.stringify({'name': response.user.location})
+				});
+			}
+			
 			getNews();
 		});
 	}
