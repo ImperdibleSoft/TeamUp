@@ -313,6 +313,7 @@ function getNews(){
 						}
 					}
 					
+					/*	Show notification	*/
 					if(shouldShowThisNotification(temp1)){
 						notificationCount++;
 						
@@ -332,6 +333,35 @@ function getNews(){
 							}
 						}
 					}
+				
+					/*	Set the match as completed	*/
+					if(temp1.players.length >= temp1.maxPlayers){
+						debug("Completing recruiting with ID "+ temp1.id);
+						
+						var data = {
+							"id": temp1.id,
+							"location": user.location
+						};
+						
+						$.ajax({
+							type : 'post',
+							url : apiURL +'completeRecruiting',
+							dataType : 'json', 
+							data : JSON.stringify(data),
+							success : function(response) {
+								connectionRestored();
+							},
+							error: function(connection, text, error){
+								var temp = {
+									"connection": connection,
+									"text": text,
+									"error": error
+								}
+								connectionError(temp);
+							}
+						});
+					}
+					
 				}
 				
 				recruitingsList = response.recruitings;

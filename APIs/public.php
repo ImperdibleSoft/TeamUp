@@ -45,7 +45,7 @@
 	else if( isset($_GET['action']) && $_GET['action'] == "getRecruitings" ){
 	
 		/*	Get all recruitings	*/
-		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."'";
+		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."' AND completed='0' AND cancelled='0'";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
@@ -126,7 +126,7 @@
 	else if( isset($_GET['action']) && $_GET['action'] == "removeRecruiting" ){
 		
 		/*	Create a new Recruiting	*/
-		$sql = "DELETE FROM recruitings WHERE id_recruiting='". $POST->id ."'";
+		$sql = "UPDATE recruitings SET cancelled='1' WHERE id_recruiting='". $POST->id ."'";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
@@ -149,6 +149,19 @@
 			$recruitings[] = limpiar_array($fila);
 		}
 		$response['recruitings'] = $recruitings;
+	}
+	
+	else if( isset($_GET['action']) && $_GET['action'] == "completeRecruiting" ){
+		
+		/*	Create a new Recruiting	*/
+		$sql = "UPDATE recruitings SET completed='1' WHERE id_recruiting='". $POST->id ."'";
+		$resul = mysqli_query($conexion, $sql);
+		if(!$resul){
+			$error = mysqli_error($conexion);
+			$response['error'][] = $error;
+			echo json_encode($response);
+			exit();
+		}
 	}
 	
 	echo json_encode($response);
