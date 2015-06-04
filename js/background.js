@@ -173,22 +173,7 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 				dataType : 'json', 
 				data : JSON.stringify(data),
 				success : function(response) {
-					connectionRestored();
-					
-					recruitingsList = new Array();
-					for(var x in response.recruitings){
-						response.recruitings[x].id = response.recruitings[x].id_recruiting;
-						response.recruitings[x].players = response.recruitings[x].players.split(",");
-						recruitingsList.push( response.recruitings[x] );
-					}
-					
-					debug("Returning new recruitingsList to UI");
-					debug(recruitingsList);
-					
-					updateRecruiting.postMessage({
-						'recruitingsList': recruitingsList
-					});
-				},
+					connectionRestored();},
 				error: function(connection, text, error){
 					var temp = {
 						"connection": connection,
@@ -313,6 +298,7 @@ function getNews(){
 							if(temp1.players.length != temp2.players.length){
 								remainingPlayers = temp1.maxPlayers - temp1.players.length;
 							}
+							break;
 						}
 					}
 					
@@ -364,7 +350,6 @@ function getNews(){
 							}
 						});
 					}
-					
 				}
 				
 				recruitingsList = response.recruitings;
