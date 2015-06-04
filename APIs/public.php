@@ -73,7 +73,7 @@
 		}
 		
 		/*	Get all recruitings	*/
-		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."'";
+		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."' AND cancelled='0'";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
@@ -108,7 +108,7 @@
 		}
 
 		/*	Get all recruitings	*/
-		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."'";
+		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."' AND cancelled='0'";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
@@ -136,7 +136,7 @@
 		}
 		
 		/*	Get all recruitings	*/
-		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."'";
+		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."' AND cancelled='0'";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
