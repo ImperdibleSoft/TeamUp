@@ -3,8 +3,8 @@ teamUp.config(function($routeProvider) {
 	
     $routeProvider
         .when('/', {
-            templateUrl : 'app/views/main.html',
-            controller  : 'mainCtrl'
+            templateUrl : 'app/views/extension.html',
+            controller  : 'extensionCtrl'
         })
         .otherwise({ 
  			redirectTo: '/' 

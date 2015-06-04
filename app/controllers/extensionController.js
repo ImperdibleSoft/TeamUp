@@ -1,8 +1,11 @@
-teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
+teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, services){
  
 	/*	Init variables	*/
 	var locations;
+	var debugging = false;
+	
 	$scope.appVersion = "";
+	$scope.error = false;
 	$scope.user = false;
 	$scope.waiting = false;
 	$scope.recruitingOnMyLocation = false;
@@ -54,6 +57,10 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 				$scope.viewAllRecruitings = response.viewAllRecruitings;
 			}
 			
+			if(response.error){
+				$scope.error = response.error;
+			}
+			
 			$("#refresh").click();
 		});
 		
@@ -65,9 +72,22 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 					console.log(response.recruitings);
 					
 					$scope.parseRecruitingsList(response.recruitings);
+					$("#refresh").click();
 					
 					console.log("recruitingsList parsed");
 					console.log($scope.recruitingsList);
+				});
+			}
+		});
+		
+		/* Create connError connection	*/
+		chrome.runtime.onConnect.addListener(function(connError){
+			if(connError.name == "connError"){
+				connError.onMessage.addListener(function(response){
+					
+					$scope.error = response.error;
+					$("#refresh").click();
+					
 				});
 			}
 		});
@@ -232,6 +252,13 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 		}
 	}
 	
+	$scope.refreshPage = function(){
+		var speed = 0;
+		$("body > .mc-content").hide(speed, function(){
+			$("body > .mc-content").show(speed);
+		});
+	}
+	
 	/*	Recruiting class	*/
 	var Recruiting = function(data){
 		var self = this
@@ -348,5 +375,11 @@ teamUp.controller("mainCtrl", ['$scope', 'services', function($scope, services){
 		var newDate = param.substring(11, 16);
 		
 		return newDate;
+	}
+
+	function debug(param){
+		if(debugging == true){
+			console.log(param);
+		}
 	}
 }]);

@@ -8,24 +8,27 @@
 var user = false;
 var recruitingsList = new Array();
 var viewAllRecruitingsOption = false;
+var errors = false;
+var debugging = false;
 
 /*	Initial conection, verify logged user	*/
 chrome.runtime.onConnect.addListener(function(status){
 	if(status.name == "status"){
 		status.onMessage.addListener(function(response){
 			
-			console.log("Asking for status");
+			debug("Asking for status");
 			
 			/* Send user data */
 			status.postMessage({
 				'user': user,
 				'recruitingsList': recruitingsList,
-				'viewAllRecruitings': viewAllRecruitingsOption
+				'viewAllRecruitings': viewAllRecruitingsOption,
+				'error': errors
 			});
 			
-			console.log("Returning user and recruitingsList data");
-			console.log(user);
-			console.log(recruitingsList);
+			debug("Returning user and recruitingsList data");
+			debug(user);
+			debug(recruitingsList);
 		});
 	}
 });
@@ -35,7 +38,7 @@ chrome.runtime.onConnect.addListener(function(viewAllRecruitings){
 	if(viewAllRecruitings.name == "viewAllRecruitings"){
 		viewAllRecruitings.onMessage.addListener(function(response){
 			
-			console.log("Changing user preference. viewAllRecruitings="+ response.viewAllRecruitings);
+			debug("Changing user preference. viewAllRecruitings="+ response.viewAllRecruitings);
 			viewAllRecruitingsOption = response.viewAllRecruitings;
 		});
 	}
@@ -52,7 +55,18 @@ chrome.runtime.onConnect.addListener(function(login){
 					method : 'POST',
 					url : apiURL +'createLocation',
 					dataType : 'json', 
-					data : JSON.stringify({'name': response.user.location})
+					data : JSON.stringify({'name': response.user.location}),
+					success: function(response2){
+						connectionRestored();
+					},
+					error: function(connection, text, error){
+						var temp = {
+							"connection": connection,
+							"text": text,
+							"error": error
+						}
+						connectionError(temp);
+					}
 				});
 			}
 			
@@ -67,8 +81,8 @@ chrome.runtime.onConnect.addListener(function(create){
 		
 		create.onMessage.addListener(function(response){
 			
-			console.log("Getting new recruiting");
-			console.log(response.create);
+			debug("Getting new recruiting");
+			debug(response.create);
 			
 			response.create.players = response.create.players.toString();
 			
@@ -78,7 +92,8 @@ chrome.runtime.onConnect.addListener(function(create){
 				dataType : 'json', 
 				data : JSON.stringify( response.create ),
 				success : function(response2) {
-
+					connectionRestored();
+					
 					recruitingsList = new Array();
 					for(var x in response2.recruitings){
 						response2.recruitings[x].id = response2.recruitings[x].id_recruiting;
@@ -88,14 +103,22 @@ chrome.runtime.onConnect.addListener(function(create){
 					
 					showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +"players", response.create.id);
 					getNews();
+				},
+				error: function(connection, text, error){
+					var temp = {
+						"connection": connection,
+						"text": text,
+						"error": error
+					}
+					connectionError(temp);
 				}
 			});
 			
 			/*	Stores the new recruiting on the list	*/
 			recruitingsList.push(response.create);
 			
-			console.log("Added to BackgroundJS recruitingsList");
-			console.log(recruitingsList);
+			debug("Added to BackgroundJS recruitingsList");
+			debug(recruitingsList);
 			
 			/*	Send data to Extension UI	*/
 			var recruitings = chrome.runtime.connect({name: "recruitings"});
@@ -103,8 +126,8 @@ chrome.runtime.onConnect.addListener(function(create){
 				'recruitings': recruitingsList
 			});
 			
-			console.log("Returning recruitingsList to UI");
-			console.log(recruitingsList);
+			debug("Returning recruitingsList to UI");
+			debug(recruitingsList);
 			
 			/*	Show the notification	*/
 			showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players", response.create.id);
@@ -118,7 +141,7 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 	if(updateRecruiting.name == "updateRecruiting"){
 		updateRecruiting.onMessage.addListener(function(response){
 			
-			console.log("Updating the recruiting with ID "+ response.recruiting.id);
+			debug("Updating the recruiting with ID "+ response.recruiting.id);
 			
 			response.recruiting.players = response.recruiting.players.toString();
 			
@@ -136,7 +159,7 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 				dataType : 'json', 
 				data : JSON.stringify(data),
 				success : function(response) {
-					self.noerror = true;
+					connectionRestored();
 					
 					recruitingsList = new Array();
 					for(var x in response.recruitings){
@@ -145,12 +168,20 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 						recruitingsList.push( response.recruitings[x] );
 					}
 					
-					console.log("Returning new recruitingsList to UI");
-					console.log(recruitingsList);
+					debug("Returning new recruitingsList to UI");
+					debug(recruitingsList);
 					
 					updateRecruiting.postMessage({
 						'recruitingsList': recruitingsList
 					});
+				},
+				error: function(connection, text, error){
+					var temp = {
+						"connection": connection,
+						"text": text,
+						"error": error
+					}
+					connectionError(temp);
 				}
 			});
 		});
@@ -162,7 +193,7 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 	if(removeRecruiting.name == "removeRecruiting"){
 		removeRecruiting.onMessage.addListener(function(response){
 			
-			console.log("Removing recruiting with ID "+ response.id);
+			debug("Removing recruiting with ID "+ response.id);
 			
 			var data = {
 				"id": response.id,
@@ -175,7 +206,7 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 				dataType : 'json', 
 				data : JSON.stringify(data),
 				success : function(response) {
-					self.noerror = true;
+					connectionRestored();
 					
 					recruitingsList = new Array();
 					for(var x in response.recruitings){
@@ -184,12 +215,20 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 						recruitingsList.push( response.recruitings[x] );
 					}
 					
-					console.log("Returning new recruitingsList to UI");
-					console.log(recruitingsList);
+					debug("Returning new recruitingsList to UI");
+					debug(recruitingsList);
 							
 					removeRecruiting.postMessage({
 						'recruitingsList': recruitingsList
 					});
+				},
+				error: function(connection, text, error){
+					var temp = {
+						"connection": connection,
+						"text": text,
+						"error": error
+					}
+					connectionError(temp);
 				}
 			});
 		
@@ -234,34 +273,96 @@ function getNews(){
 		dataType : 'json', 
 		data : JSON.stringify(data),
 		success : function(response) {
-			self.noerror = true;
+			connectionRestored();
 			
-			/* Alerta para mensajes */
-			if(response.recruitings.length > recruitingsList.length){
-				showNotification("New recruitings", "There are "+ response.recruitings.length +" opened recruitings", 1);
-			}
-			
-			recruitingsList = new Array();
+			/* Foreach recruiting*/
 			for(var x in response.recruitings){
+				
+				/*	Parse data	*/
 				response.recruitings[x].id = response.recruitings[x].id_recruiting;
 				response.recruitings[x].players = response.recruitings[x].players.split(",");
-				recruitingsList.push( response.recruitings[x] );
+				
+				var temp1 = response.recruitings[x];
+				var alreadyNotified = false;
+				var remainingPlayers = false;
+				
+				/*	Verify already checked elements	*/
+				for(var y in recruitingsList){
+					var temp2 = recruitingsList[y];
+					
+					/*	Already checked recruiting	*/
+					if(temp1.id == temp2.id){
+						alreadyNotified = true;
+						
+						if(temp1.players.length != temp2.players.length){
+							remainingPlayers = temp1.maxPlayers - temp1.players.length;
+						}
+					}
+				}
+				
+				
+				if(shouldShowThisNotification(temp1)){
+					if(!alreadyNotified){
+						remainingPlayers = temp1.maxPlayers - temp1.players.length;
+						
+						if(remainingPlayers > 0){
+							showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id);
+						}
+					}
+					else if(remainingPlayers !== false){
+						if(remainingPlayers > 0){
+							showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id);
+						}
+						else{
+							showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id);
+						}
+					}
+				}
 			}
+			
+			recruitingsList = response.recruitings;
+			
+			/* Create status connection	*/
+			var updateRecruitings = chrome.runtime.connect({name: "recruitings"});
+			
+			/*	Send recruitings to UI	*/
+			updateRecruitings.postMessage({
+				'recruitings': recruitingsList
+			});
 			
 			changeIcon( recruitingsList.length );
 		},
 		complete : function(response) {
 			
 			setTimeout(function(){ getNews(); }, 5000);
+		},
+		error: function(connection, text, error){
+			var temp = {
+				"connection": connection,
+				"text": text,
+				"error": error
+			}
+			connectionError(temp);
 		}
 	});
 }
 
+/*	Change the icon	*/
 function changeIcon(param){
 	if(param > 0){
 		chrome.browserAction.setBadgeText({"text": String(param)});
 	}else{
 		chrome.browserAction.setBadgeText({"text": ''});
+	}
+}
+
+/*	Verify if this recruiting notification should be shown	*/
+function shouldShowThisNotification(recruiting){
+	if((recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitingsOption) && !recruiting.completed && !recruiting.cancelled){
+		return true;
+	}
+	else{
+		return false;
 	}
 }
 
@@ -274,8 +375,49 @@ function showNotification(title, msg, id){
 		"message": msg,
 		"iconUrl": "/images/logo_128.png"
 	}
+	var num = parseInt( Math.random() * 1000000 );
 	var wkn = chrome.notifications;
-	var notif = wkn.create(id+"", options);
+	var notif = wkn.create(num+"", options);
 }
+
+function connectionError(param){
+	if(errors == false){
+		var num = parseInt( Math.random() * 1000000 );
+		showNotification("Connection error", "There was a connection error. Please, wait a few minutes while we try to solve the problem.", num);
+	}
+	errors = param;
+	
+	/* Create connError connection	*/
+	var connError = chrome.runtime.connect({name: "connError"});
+	
+	/*	Send the error	*/
+	connError.postMessage({
+		'error': errors
+	});
+}
+
+function connectionRestored(){
+	if(errors != false){
+		var num = parseInt( Math.random() * 1000000 );
+		showNotification("Connection restored", "Good news, the connection was restored!", num);
+	}
+	errors = false;
+	
+	/* Create connError connection	*/
+	var connError = chrome.runtime.connect({name: "connError"});
+	
+	/*	Send the error	*/
+	connError.postMessage({
+		'error': errors
+	});
+}
+
+function debug(param){
+	if(debugging == true){
+		console.log(param);
+	}
+}
+
+
 
 

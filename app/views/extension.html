@@ -1,10 +1,10 @@
 <!-- Create Recruiting button -->
-<div class="mc-right" data-ng-if="user && !waiting && !creatingRecruiting">
+<div class="mc-right" data-ng-if="user && !waiting && !creatingRecruiting && !error">
 	<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-click="createRecruiting()">Create</button>
 </div>
 
 <!-- View all recruitings -->
-<label class="mc-switcher" data-ng-show="waiting">
+<label class="mc-switcher" data-ng-show="waiting && !error">
 	<input type="checkbox" data-ng-model="viewAllRecruitings" data-ng-change="updateView(this)" />
 	<div class="mc-switch-bg" >
 		<div class="mc-switch" ></div>
@@ -17,7 +17,7 @@
 	<div class="mc-layout" mc-layout-size="biggest">
 		
 		<!-- Login -->
-		<form class="mc-card" data-ng-show="!user" data-ng-submit="loginUser()" name="loginForm" role="form" novalidate>
+		<form class="mc-card" data-ng-show="!user && !error" data-ng-submit="loginUser()" name="loginForm" role="form" novalidate>
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
@@ -47,20 +47,8 @@
 			</div>
 		</form>
 		
-		<!-- No recruiting -->
-		<div class="mc-card" data-ng-if="user && (recruitingsList.length < 1 || !recruitingOnMyLocation) && !creatingRecruiting">
-			<div class="mc-content">
-				<p class="mc-text">No active recruitings on:</p>
-				<div mc-layout="list">
-					<div class="mc-list-item" mc-action="location">
-						<p class="mc-title">{{ user.location }}</p>
-					</div>
-				</div>
-			</div>
-		</div>
-		
 		<!-- New Recruiting -->
-		<form class="mc-card" data-ng-show="user && creatingRecruiting" data-ng-submit="saveRecruiting()" name="recruitingForm" role="form" novalidate>
+		<form class="mc-card" data-ng-show="user && !error && creatingRecruiting" data-ng-submit="saveRecruiting()" name="recruitingForm" role="form" novalidate>
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
@@ -94,7 +82,7 @@
 		</form>
 		
 		<!-- Existing recruiting -->
-		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting )">
+		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && !error && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting )">
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
@@ -118,7 +106,28 @@
 				<button class="mc-button mc-button-comb" mc-action="cancel" data-ng-click="recruiting.removePlayer()" data-ng-if="recruiting.players.length < recruiting.maxPlayers && recruiting.players.indexOf( user.name ) >= 0 && waiting">Cancel</button>
 			</div>
 		</div>
+	
+		<!-- No recruiting -->
+		<div class="mc-card" data-ng-if="user && !error && (recruitingsList.length < 1 || !recruitingOnMyLocation) && !creatingRecruiting">
+			<div class="mc-content">
+				<p class="mc-text">No active recruitings on:</p>
+				<div mc-layout="list">
+					<div class="mc-list-item" mc-action="location">
+						<p class="mc-title">{{ user.location }}</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Error -->
+		<div class="mc-card" data-ng-if="error" style="border: 1px solid #C62828;">
+			<div class="mc-content">
+				<p class="mc-text mc-color-darkred">There was a connection error.</p>
+				<p class="mc-note mc-color-darkred">Please, wait a few minutes while we try to solve the problem.</p>
+			</div>
+		</div>
+		
 	</div>
 </div>
 
-<button id="refresh" style="display: none;" class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="refresh" data-ng-click="debug()">Refresh</button>
+<button id="refresh" style="display: none;" class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="refresh" data-ng-click="refreshPage()">Refresh</button>
