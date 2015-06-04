@@ -81,6 +81,7 @@ chrome.runtime.onConnect.addListener(function(logout){
 	if(logout.name == "logout"){
 		logout.onMessage.addListener(function(response){
 			user = response.user;
+			changeIcon(0);
 		});
 	}
 });
