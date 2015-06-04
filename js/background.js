@@ -7,6 +7,7 @@
 
 var user = false;
 var recruitingsList = new Array();
+var waiting = false;
 var viewAllRecruitingsOption = false;
 var notificationCount = 0;
 var errors = false;
@@ -150,6 +151,12 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 			
 			debug("Updating the recruiting with ID "+ response.recruiting.id);
 			
+			if(response.recruiting.players.indexOf( user.name ) >= 0){
+				waiting = true;
+			}
+			else{
+				waiting = false;
+			}
 			response.recruiting.players = response.recruiting.players.toString();
 			
 			var data = {
@@ -398,12 +405,16 @@ function changeIcon(param){
 
 /*	Verify if this recruiting notification should be shown	*/
 function shouldShowThisNotification(recruiting){
-	if((recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitingsOption) && !recruiting.completed && !recruiting.cancelled){
-		return true;
+	
+	if((!waiting || recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitingsOption) && recruiting.completed == '0' && !recruiting.cancelled == '0'){
+		var value = true;
 	}
 	else{
-		return false;
+		var value = false;
 	}
+	
+	debug("Should show '"+ recruiting.description +"' notification: "+ value);
+	return value;
 }
 
 /*	Creates a new Notification	*/
