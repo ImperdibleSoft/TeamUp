@@ -76,6 +76,15 @@ chrome.runtime.onConnect.addListener(function(login){
 	}
 });
 
+/*	Logout conection, Logs out the user	*/
+chrome.runtime.onConnect.addListener(function(logout){
+	if(logout.name == "logout"){
+		logout.onMessage.addListener(function(response){
+			user = response.user;
+		});
+	}
+});
+
 /* Create conection, creates a new Recruiting */
 chrome.runtime.onConnect.addListener(function(create){
 	if(create.name == "create"){
@@ -264,90 +273,91 @@ chrome.runtime.onConnect.addListener(function(logout){
 /* Get recruiting list */
 function getNews(){
 	
-	var data = {
-		"location": user.location
-	}
-	
-	$.ajax({
-		type : 'post',
-		url : apiURL +'getRecruitings',
-		dataType : 'json', 
-		data : JSON.stringify(data),
-		success : function(response) {
-			connectionRestored();
-			notificationCount = 0;
-			
-			/* Foreach recruiting*/
-			for(var x in response.recruitings){
-				
-				/*	Parse data	*/
-				response.recruitings[x].id = response.recruitings[x].id_recruiting;
-				response.recruitings[x].players = response.recruitings[x].players.split(",");
-				
-				var temp1 = response.recruitings[x];
-				var alreadyNotified = false;
-				var remainingPlayers = false;
-				
-				/*	Verify already checked elements	*/
-				for(var y in recruitingsList){
-					var temp2 = recruitingsList[y];
-					
-					/*	Already checked recruiting	*/
-					if(temp1.id == temp2.id){
-						alreadyNotified = true;
-						
-						if(temp1.players.length != temp2.players.length){
-							remainingPlayers = temp1.maxPlayers - temp1.players.length;
-						}
-					}
-				}
-				
-				if(shouldShowThisNotification(temp1)){
-					notificationCount++;
-					
-					if(!alreadyNotified){
-						remainingPlayers = temp1.maxPlayers - temp1.players.length;
-						
-						if(remainingPlayers > 0){
-							showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id);
-						}
-					}
-					else if(remainingPlayers !== false){
-						if(remainingPlayers > 0){
-							showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id);
-						}
-						else{
-							showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id);
-						}
-					}
-				}
-			}
-			
-			recruitingsList = response.recruitings;
-			
-			/* Create status connection	*/
-			var updateRecruitings = chrome.runtime.connect({name: "recruitings"});
-			
-			/*	Send recruitings to UI	*/
-			updateRecruitings.postMessage({
-				'recruitings': recruitingsList
-			});
-			
-			changeIcon( notificationCount );
-		},
-		complete : function(response) {
-			
-			setTimeout(function(){ getNews(); }, 5000);
-		},
-		error: function(connection, text, error){
-			var temp = {
-				"connection": connection,
-				"text": text,
-				"error": error
-			}
-			connectionError(temp);
+	if(user){
+		var data = {
+			"location": user.location
 		}
-	});
+		
+		$.ajax({
+			type : 'post',
+			url : apiURL +'getRecruitings',
+			dataType : 'json', 
+			data : JSON.stringify(data),
+			success : function(response) {
+				connectionRestored();
+				notificationCount = 0;
+				
+				/* Foreach recruiting*/
+				for(var x in response.recruitings){
+					
+					/*	Parse data	*/
+					response.recruitings[x].id = response.recruitings[x].id_recruiting;
+					response.recruitings[x].players = response.recruitings[x].players.split(",");
+					
+					var temp1 = response.recruitings[x];
+					var alreadyNotified = false;
+					var remainingPlayers = false;
+					
+					/*	Verify already checked elements	*/
+					for(var y in recruitingsList){
+						var temp2 = recruitingsList[y];
+						
+						/*	Already checked recruiting	*/
+						if(temp1.id == temp2.id){
+							alreadyNotified = true;
+							
+							if(temp1.players.length != temp2.players.length){
+								remainingPlayers = temp1.maxPlayers - temp1.players.length;
+							}
+						}
+					}
+					
+					if(shouldShowThisNotification(temp1)){
+						notificationCount++;
+						
+						if(!alreadyNotified){
+							remainingPlayers = temp1.maxPlayers - temp1.players.length;
+							
+							if(remainingPlayers > 0){
+								showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id);
+							}
+						}
+						else if(remainingPlayers !== false){
+							if(remainingPlayers > 0){
+								showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id);
+							}
+							else{
+								showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id);
+							}
+						}
+					}
+				}
+				
+				recruitingsList = response.recruitings;
+				
+				/* Create status connection	*/
+				var updateRecruitings = chrome.runtime.connect({name: "recruitings"});
+				
+				/*	Send recruitings to UI	*/
+				updateRecruitings.postMessage({
+					'recruitings': recruitingsList
+				});
+				
+				changeIcon( notificationCount );
+			},
+			complete : function(response) {
+					setTimeout(function(){ getNews(); }, 5000);
+			},
+			error: function(connection, text, error){
+				var temp = {
+					"connection": connection,
+					"text": text,
+					"error": error
+				}
+				connectionError(temp);
+			}
+		});
+	}
 }
 
 /*	Change the icon	*/

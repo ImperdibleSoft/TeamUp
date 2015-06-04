@@ -44,13 +44,13 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 			}
 			
 			if(response.recruitingsList){
-				console.log("Getting the recruitingsList from BackgroundJS");
-				console.log(response.recruitingsList);
+				debug("Getting the recruitingsList from BackgroundJS");
+				debug(response.recruitingsList);
 				
 				$scope.parseRecruitingsList(response.recruitingsList);
 				
-				console.log("recruitingsList parsed");
-				console.log($scope.recruitingsList);
+				debug("recruitingsList parsed");
+				debug($scope.recruitingsList);
 			}
 			
 			if(response.viewAllRecruitings){
@@ -68,14 +68,14 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		chrome.runtime.onConnect.addListener(function(recruitings){
 			if(recruitings.name == "recruitings"){
 				recruitings.onMessage.addListener(function(response){
-					console.log("Getting the recruitingsList from BackgroundJS");
-					console.log(response.recruitings);
+					debug("Getting the recruitingsList from BackgroundJS");
+					debug(response.recruitings);
 					
 					$scope.parseRecruitingsList(response.recruitings);
 					$("#refresh").click();
 					
-					console.log("recruitingsList parsed");
-					console.log($scope.recruitingsList);
+					debug("recruitingsList parsed");
+					debug($scope.recruitingsList);
 				});
 			}
 		});
@@ -97,7 +97,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 	/*	Login the user	*/
 	$scope.loginUser = function(){
 		var form = $scope.loginForm;
-		
 		
 		if(form.$valid){
 			$scope.user = {
@@ -134,6 +133,38 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 				});
 				
 			}
+			form.userName.$setViewValue("");
+			form.userName.$setPristine();
+			form.userLocation.$setViewValue("");
+			form.userLocation.$setPristine();
+			form.$setPristine();
+			
+			$scope.userName = "";
+			$scope.userLocation = "";
+		}
+	}
+	
+	/*	Logout the user	*/
+	$scope.logoutUser = function(){
+		$scope.user = false;
+		
+		/*	Call the createLocation service	*/
+		if(chrome && chrome.runtime && chrome.runtime.connect){
+			
+			var existingLocation = false;
+			for(var x in locations){
+				if( locations[x].name ==  $scope.user.location ){
+					existingLocation = true;
+				}
+			}
+			
+			/* Connect width background.js	*/
+			var logout = chrome.runtime.connect({name: "logout"});
+			
+			/*	Send logout data	*/
+			logout.postMessage({
+				'user': false
+			});
 		}
 	}
 	
@@ -196,19 +227,19 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					'create': temp
 				});
 				
-				console.log("Sending new recruiting");
-				console.log(temp);
+				debug("Sending new recruiting");
+				debug(temp);
 				
 				create.onMessage.addListener(function(response){
 					
 					if(response.recruitingsList){
-						console.log("Getting the recruitingsList from BackgroundJS");
-						console.log(response.recruitings);
+						debug("Getting the recruitingsList from BackgroundJS");
+						debug(response.recruitings);
 						
 						$scope.parseRecruitingsList(response.recruitings);
 						
-						console.log("recruitingsList parsed");
-						console.log($scope.recruitingsList);
+						debug("recruitingsList parsed");
+						debug($scope.recruitingsList);
 					}
 					
 					$("#refresh").click();
@@ -283,8 +314,8 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						/* Update a recruiting	*/
 						var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
 					
-						console.log("Sending updated recruiting to BackgroundJS");
-						console.log(self);
+						debug("Sending updated recruiting to BackgroundJS");
+						debug(self);
 						
 						/*	Send the current recruiting	*/
 						updateRecruiting.postMessage({
@@ -293,13 +324,13 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						
 						updateRecruiting.onMessage.addListener(function(response){
 							if(response.recruitingsList){
-								console.log("Getting the recruitingsList from BackgroundJS");
-								console.log(response.recruitingsList);
+								debug("Getting the recruitingsList from BackgroundJS");
+								debug(response.recruitingsList);
 								
 								$scope.parseRecruitingsList(response.recruitingsList);
 								
-								console.log("recruitingsList parsed");
-								console.log($scope.recruitingsList);
+								debug("recruitingsList parsed");
+								debug($scope.recruitingsList);
 							}
 							
 							$("#refresh").click();
@@ -317,8 +348,8 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					/* Update a recruiting	*/
 					var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
 					
-					console.log("Sending updated recruiting to BackgroundJS");
-					console.log(self);
+					debug("Sending updated recruiting to BackgroundJS");
+					debug(self);
 						
 					/*	Send the current recruiting	*/
 					updateRecruiting.postMessage({
@@ -327,13 +358,13 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					
 					updateRecruiting.onMessage.addListener(function(response){
 						if(response.recruitingsList){
-							console.log("Getting the recruitingsList from BackgroundJS");
-							console.log(response.recruitingsList);
+							debug("Getting the recruitingsList from BackgroundJS");
+							debug(response.recruitingsList);
 							
 							$scope.parseRecruitingsList(response.recruitingsList);
 							
-							console.log("recruitingsList parsed");
-							console.log($scope.recruitingsList);
+							debug("recruitingsList parsed");
+							debug($scope.recruitingsList);
 						}
 						
 						$("#refresh").click();
@@ -355,13 +386,13 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					
 					removeRecruiting.onMessage.addListener(function(response){
 						if(response.recruitingsList){
-							console.log("Getting the recruitingsList from BackgroundJS");
-							console.log(response.recruitingsList);
+							debug("Getting the recruitingsList from BackgroundJS");
+							debug(response.recruitingsList);
 							
 							$scope.parseRecruitingsList(response.recruitingsList);
 							
-							console.log("recruitingsList parsed");
-							console.log($scope.recruitingsList);
+							debug("recruitingsList parsed");
+							debug($scope.recruitingsList);
 						}
 						
 						$("#refresh").click();
@@ -378,7 +409,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 	}
 
 	function debug(param){
-		if(debugging == true){
+		if(debugging === true){
 			console.log(param);
 		}
 	}
