@@ -335,7 +335,7 @@ function getNews(){
 					}
 				
 					/*	Set the match as completed	*/
-					if(temp1.players.length >= temp1.maxPlayers){
+					if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
 						debug("Completing recruiting with ID "+ temp1.id);
 						
 						var data = {

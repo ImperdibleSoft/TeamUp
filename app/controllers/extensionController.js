@@ -262,20 +262,21 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 				"location": temp.location,
 				"maxPlayers": temp.maxPlayers,
 				"players": temp.players,
-				"date": temp.date ? temp.date : false
+				"date": temp.date ? temp.date : false,
+				"completed": (temp.completed && temp.completed == "1") ? temp.completed: false
 			};
 			
 			var recru = new Recruiting(data);
 			for(var y in temp.players){
 				recru.addPlayer(temp.players[y]);
 				
-				if(temp.players[y] == $scope.user.name){
+				if(temp.players[y] == $scope.user.name && recru.completed == false){
 					$scope.waiting = true;
 					recru.myRecruiting = true;
 				}
 			}
 			
-			if(recru.location == $scope.user.location){
+			if(recru.location == $scope.user.location && recru.completed == false){
 				$scope.recruitingOnMyLocation = true;
 			}
 			
@@ -299,6 +300,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		this.maxPlayers = data.maxPlayers;
 		this.players = new Array();
 		this.date = data.date ? formatDate(data.date) : "0000-00-00 00:00:00";
+		this.completed = data.completed ? data.completed : false;
 		this.myRecruiting = data.myRecruiting ? data.myRecruiting : false;
 		
 		this.addPlayer = function(param){

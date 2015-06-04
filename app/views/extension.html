@@ -83,7 +83,7 @@
 		</form>
 		
 		<!-- Existing recruiting -->
-		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && !error && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting )">
+		<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && !error && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting && !recruiting.completed && (!waiting || viewAllRecruitings || recruiting.myRecruiting )">
 		
 			<div class="mc-header">
 				<img style="border-radius: 0px!important;" src="images/logo_128.png" />
