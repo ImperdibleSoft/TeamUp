@@ -112,8 +112,8 @@ chrome.runtime.onConnect.addListener(function(create){
 						recruitingsList.push( response2.recruitings[x] );
 					}
 					
-					showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +"players", response.create.id);
-					getNews();
+					/*	Show the notification	*/
+					showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players", response.create.id);
 				},
 				error: function(connection, text, error){
 					var temp = {
@@ -139,10 +139,6 @@ chrome.runtime.onConnect.addListener(function(create){
 			
 			debug("Returning recruitingsList to UI");
 			debug(recruitingsList);
-			
-			/*	Show the notification	*/
-			showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players", response.create.id);
-			
 		});
 	}
 });
