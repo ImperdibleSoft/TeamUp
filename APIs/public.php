@@ -45,7 +45,7 @@
 	else if( isset($_GET['action']) && $_GET['action'] == "getRecruitings" ){
 	
 		/*	Get all recruitings	*/
-		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."' AND completed='0' AND cancelled='0'";
+		$sql = "SELECT * FROM recruitings WHERE location='". $POST->location ."' AND cancelled='0'";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
