@@ -8,6 +8,7 @@
 var user = false;
 var recruitingsList = new Array();
 var viewAllRecruitingsOption = false;
+var notificationCount = 0;
 var errors = false;
 var debugging = false;
 
@@ -274,6 +275,7 @@ function getNews(){
 		data : JSON.stringify(data),
 		success : function(response) {
 			connectionRestored();
+			notificationCount = 0;
 			
 			/* Foreach recruiting*/
 			for(var x in response.recruitings){
@@ -300,8 +302,9 @@ function getNews(){
 					}
 				}
 				
-				
 				if(shouldShowThisNotification(temp1)){
+					notificationCount++;
+					
 					if(!alreadyNotified){
 						remainingPlayers = temp1.maxPlayers - temp1.players.length;
 						
@@ -330,7 +333,7 @@ function getNews(){
 				'recruitings': recruitingsList
 			});
 			
-			changeIcon( recruitingsList.length );
+			changeIcon( notificationCount );
 		},
 		complete : function(response) {
 			
