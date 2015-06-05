@@ -14,14 +14,14 @@
         
 		<header class="mc-header">
 			<div class="mc-header-line">
-				<button class="mc-button mc-button-icon" mc-action="menu"></button>
 				<h1 class="mc-title">Team Up!</h1>
 			</div>
         </header>
 
 		<section class="mc-content mc-untabbed" data-ng-view=""></section>
 		<section class="mc-footer">
-			<p class="mc-note">Team Up! v<span id="appVersion"></span> | Created by <a href="http://www.imperdiblesoft.com" target="_blank">ImperdibleSoft</a></p>
+			<p class="mc-note">Team Up! v<span id="appVersion"></span> | Created by <a href="http://www.imperdiblesoft.com" target="_blank" class="mc-color-imperdiblesoft" mc-tooltip="imperdiblesoft">ImperdibleSoft</a></p>
+			<span class="mc-tooltip" mc-item="imperdiblesoft">Visit www.imperdiblesoft.com to view more incredible products.</span>
 		</section>
 		
         <script src="js/jquery.min.js"></script>
@@ -30,8 +30,12 @@
     	<script src="js/angular-route.min.js"></script>
 
     	<script src="app/app.js"></script>
+		
+    	<script src="app/controllers/webController.js"></script>
     	<script src="app/controllers/extensionController.js"></script>
+		
     	<script src="app/directives/autocomplete.js"></script>
+		
         <script src="app/services/services.js"></script>
 	</body>
 </html>
