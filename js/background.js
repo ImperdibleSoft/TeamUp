@@ -413,7 +413,7 @@ function showNotification(title, msg, id){
 	}
 	var num = parseInt( Math.random() * 1000000 );
 	var wkn = chrome.notifications;
-	var notif = wkn.create(num+"", options);
+	var notif = wkn.create(num+"", options, function(){});
 }
 
 function connectionError(param){
