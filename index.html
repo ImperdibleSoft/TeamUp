@@ -13,12 +13,12 @@
 		<meta name="mobile-web-app-capable" content="yes">
 		<link rel="manifest" href="manifest.json">
         <link rel="shortcut icon" href="images/logo.png" />
-		<link rel="icon" href="images/logo.png" sizes="192x192">
+		<link rel="icon" href="images/logo_256.png" sizes="256x256">
 		<meta name="theme-color" content="#55ACEE">
 		
 		<!-- iOS -->
 		<meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="apple-touch-icon" href="images/logo.png" />
+        <link rel="apple-touch-icon" href="images/logo_256.png" />
 		
 		<!-- JS -->
         <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -38,7 +38,7 @@
 		<meta property="og:title" content="Team Up!" />
 		<meta property="og:url" content="http://teamup.imperdiblesoft.com" />
 		<meta property="og:description" content="Team Up! is a simple extension for creating recruitments." />
-		<meta property="og:image" content="http://teamup.imperdiblesoft.com/images/logo.png" />
+		<meta property="og:image" content="http://teamup.imperdiblesoft.com/images/logo_256.png" />
 	
 		<!-- Twitter -->
 		<meta name="twitter:creator" content="@ImperdibleSoft" />
@@ -47,7 +47,7 @@
 		<meta name="twitter:title" content="Team Up!" />
 		<meta name="twitter:description" content="Team Up! is a simple extension for creating recruitments." />
 		<meta name="twitter:url" content="http://teamup.imperdiblesoft.com" />
-		<meta name="twitter:image" content="http://teamup.imperdiblesoft.com/images/logo.png" />
+		<meta name="twitter:image" content="http://teamup.imperdiblesoft.com/images/logo_256.png" />
 	
 		<!-- Google+ -->
 		<link rel="author" href="https://plus.google.com/+Imperdiblesoft/" />
@@ -55,11 +55,19 @@
 		<meta itemprop="name" content="Team Up!" />
 		<meta itemprop="description" content="Team Up! is a simple extension for creating recruitments." />
 		<meta itemprop="thumbnail" content="http://schema.org/ImageObject" />
-		<meta itemprop="thumbnailUrl" content="http://teamup.imperdiblesoft.com/images/logo.png" />
+		<meta itemprop="thumbnailUrl" content="http://teamup.imperdiblesoft.com/images/logo_256.png" />
 		
 	</head>
 	<body mc-layout="no-nav">
         
+		<!-- Splash screen -->
+		<div class="mc-splash">
+			<div class="mc-content">
+				<img src="images/logo.png" />
+			</div>
+		</div>
+		
+		<!-- Header -->
 		<header class="mc-header">
 			<div class="mc-header-line">
 				<a id="backBtn" href="javascript:history.back(1)" class="mc-button mc-button-icon mc-clickable" mc-action="prev"></a>
@@ -67,28 +75,36 @@
 			</div>
         </header>
 
+		<!-- Content -->
 		<section class="mc-content mc-untabbed" data-ng-view=""></section>
+		
+		<!-- Footer -->
 		<section class="mc-footer">
 			<p class="mc-note">Team Up! v<span id="appVersion"></span> | Created by <a href="http://www.imperdiblesoft.com" target="_blank" class="mc-color-imperdiblesoft" mc-tooltip="imperdiblesoft">ImperdibleSoft</a></p>
 			<span class="mc-tooltip" mc-item="imperdiblesoft">Visit www.imperdiblesoft.com to view more incredible products.</span>
 		</section>
 		
+		<!-- Notifications -->
 		<div class="mc-notification-container"></div>
 		
-		<!-- JS Files -->
+        <!-- Vendors -->
     	<script src="js/angular.min.js"></script>
     	<script src="js/angular-route.min.js"></script>
     	<script src="js/angular-cookies.js"></script>
 
+        <!-- App -->
     	<script src="app/app.js"></script>
     	<script src="app/conf.js"></script>
 		
+		<!-- Controllers -->
     	<script src="app/controllers/webController.js"></script>
     	<script src="app/controllers/webAppController.js"></script>
     	<script src="app/controllers/extensionController.js"></script>
 		
+		<!-- Directives -->
     	<script src="app/directives/autocomplete.js"></script>
 		
+		<!-- Services -->
         <script src="app/services/services.js"></script>
 	</body>
 </html>
