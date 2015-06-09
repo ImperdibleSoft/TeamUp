@@ -3,7 +3,7 @@
 
 	"name": "Team Up!",
 	"description": "Team Up! is a simple extension for creating recruitments.",
-	"version": "1.2",
+	"version": "1.5.2",
 	"author": "ImperdibleSoft",
 	
 	"icons": {
@@ -30,6 +30,7 @@
 	"background": {
 		"scripts": [
 			"js/jquery.min.js",
+			"app/conf.js",
 			"js/background.js"
 		]
 	}

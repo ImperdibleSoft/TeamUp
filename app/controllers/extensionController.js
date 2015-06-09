@@ -15,85 +15,97 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
 	
+	/*	Functions declaration	*/
 	/*	Init function	*/
-	/*	Get AppVersion	*/
-	services.getAppVersion().success(function(response){
-		$scope.appVersion = response.version;
-		$("#appVersion").html($scope.appVersion);
-	});
-	
-	/*	Get Locations	*/
-	services.getLocations().success(function(response){
-		locations = response.locations;
-	});
-	
-	/*	Connection with BackgroundJS	*/
-	if(chrome && chrome.runtime && chrome.runtime.connect){
+	$scope.init = function(){
 		
-		/* Create status connection	*/
-		var status = chrome.runtime.connect({name: "status"});
+		/*	Change the layout	*/
+		$("body").attr("mc-layout", "no-nav");
 		
-		/*	Ask for conected user	*/
-		status.postMessage({
-			'status': null
+		/*	Show the "Back" button	*/
+		$("#backBtn").hide();
+		
+		/*	Shows permanent notification	*/
+		$(".mc-notification-container").html("");
+		
+		/*	Get AppVersion	*/
+		services.getAppVersion().success(function(response){
+			$scope.appVersion = response.version;
+			$("#appVersion").html($scope.appVersion);
 		});
 		
-		status.onMessage.addListener(function(response){
-			if(response.user){
-				$scope.user = response.user;
-			}
+		/*	Get Locations	*/
+		services.getLocations().success(function(response){
+			locations = response.locations;
+		});
 			
-			if(response.recruitingsList){
-				debug("Getting the recruitingsList from BackgroundJS");
-				debug(response.recruitingsList);
+		/*	Connection with BackgroundJS	*/
+		if(chrome && chrome.runtime && chrome.runtime.connect){
+			
+			/* Create status connection	*/
+			var status = chrome.runtime.connect({name: "status"});
+			
+			/*	Ask for conected user	*/
+			status.postMessage({
+				'status': null
+			});
+			
+			status.onMessage.addListener(function(response){
+				if(response.user){
+					$scope.user = response.user;
+				}
 				
-				$scope.parseRecruitingsList(response.recruitingsList);
+				if(response.recruitingsList){
+					conf.debug("Getting the recruitingsList from BackgroundJS");
+					conf.debug(response.recruitingsList);
+					
+					$scope.parseRecruitingsList(response.recruitingsList);
+					
+					conf.debug("recruitingsList parsed");
+					conf.debug($scope.recruitingsList);
+				}
 				
-				debug("recruitingsList parsed");
-				debug($scope.recruitingsList);
-			}
-			
-			if(response.viewAllRecruitings){
-				$scope.viewAllRecruitings = response.viewAllRecruitings;
-			}
-			
-			if(response.error){
-				$scope.error = response.error;
-			}
-			
-			$("#refresh").click();
-		});
-		
-		/* Create recruitings connection	*/
-		chrome.runtime.onConnect.addListener(function(recruitings){
-			if(recruitings.name == "recruitings"){
-				recruitings.onMessage.addListener(function(response){
-					debug("Getting the recruitingsList from BackgroundJS");
-					debug(response.recruitings);
-					
-					$scope.parseRecruitingsList(response.recruitings);
-					$("#refresh").click();
-					
-					debug("recruitingsList parsed");
-					debug($scope.recruitingsList);
-				});
-			}
-		});
-		
-		/* Create connError connection	*/
-		chrome.runtime.onConnect.addListener(function(connError){
-			if(connError.name == "connError"){
-				connError.onMessage.addListener(function(response){
-					
+				if(response.viewAllRecruitings){
+					$scope.viewAllRecruitings = response.viewAllRecruitings;
+				}
+				
+				if(response.error){
 					$scope.error = response.error;
-					$("#refresh").click();
-					
-				});
-			}
-		});
+				}
+				
+				$("#refresh").click();
+			});
+			
+			/* Create recruitings connection	*/
+			chrome.runtime.onConnect.addListener(function(recruitings){
+				if(recruitings.name == "recruitings"){
+					recruitings.onMessage.addListener(function(response){
+						conf.debug("Getting the recruitingsList from BackgroundJS");
+						conf.debug(response.recruitings);
+						
+						$scope.parseRecruitingsList(response.recruitings);
+						$("#refresh").click();
+						
+						conf.debug("recruitingsList parsed");
+						conf.debug($scope.recruitingsList);
+					});
+				}
+			});
+			
+			/* Create connError connection	*/
+			chrome.runtime.onConnect.addListener(function(connError){
+				if(connError.name == "connError"){
+					connError.onMessage.addListener(function(response){
+						
+						$scope.error = response.error;
+						$("#refresh").click();
+						
+					});
+				}
+			});
+		}
 	}
 	
-	/*	Functions declaration	*/
 	/*	Login the user	*/
 	$scope.loginUser = function(){
 		var form = $scope.loginForm;
@@ -133,14 +145,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 				});
 				
 			}
-			form.userName.$setViewValue("");
-			form.userName.$setPristine();
-			form.userLocation.$setViewValue("");
-			form.userLocation.$setPristine();
-			form.$setPristine();
 			
-			$scope.userName = "";
-			$scope.userLocation = "";
 		}
 	}
 	
@@ -166,6 +171,8 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 				'user': false
 			});
 		}
+		
+		location.reload();
 	}
 	
 	/*	Updates the list view	*/
@@ -227,19 +234,19 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					'create': temp
 				});
 				
-				debug("Sending new recruiting");
-				debug(temp);
+				conf.debug("Sending new recruiting");
+				conf.debug(temp);
 				
 				create.onMessage.addListener(function(response){
 					
 					if(response.recruitingsList){
-						debug("Getting the recruitingsList from BackgroundJS");
-						debug(response.recruitings);
+						conf.debug("Getting the recruitingsList from BackgroundJS");
+						conf.debug(response.recruitings);
 						
 						$scope.parseRecruitingsList(response.recruitings);
 						
-						debug("recruitingsList parsed");
-						debug($scope.recruitingsList);
+						conf.debug("recruitingsList parsed");
+						conf.debug($scope.recruitingsList);
 					}
 					
 					$("#refresh").click();
@@ -316,8 +323,8 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						/* Update a recruiting	*/
 						var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
 					
-						debug("Sending updated recruiting to BackgroundJS");
-						debug(self);
+						conf.debug("Sending updated recruiting to BackgroundJS");
+						conf.debug(self);
 						
 						/*	Send the current recruiting	*/
 						updateRecruiting.postMessage({
@@ -326,13 +333,13 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						
 						updateRecruiting.onMessage.addListener(function(response){
 							if(response.recruitingsList){
-								debug("Getting the recruitingsList from BackgroundJS");
-								debug(response.recruitingsList);
+								conf.debug("Getting the recruitingsList from BackgroundJS");
+								conf.debug(response.recruitingsList);
 								
 								$scope.parseRecruitingsList(response.recruitingsList);
 								
-								debug("recruitingsList parsed");
-								debug($scope.recruitingsList);
+								conf.debug("recruitingsList parsed");
+								conf.debug($scope.recruitingsList);
 							}
 							
 							$("#refresh").click();
@@ -350,8 +357,8 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					/* Update a recruiting	*/
 					var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
 					
-					debug("Sending updated recruiting to BackgroundJS");
-					debug(self);
+					conf.debug("Sending updated recruiting to BackgroundJS");
+					conf.debug(self);
 						
 					/*	Send the current recruiting	*/
 					updateRecruiting.postMessage({
@@ -360,13 +367,13 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					
 					updateRecruiting.onMessage.addListener(function(response){
 						if(response.recruitingsList){
-							debug("Getting the recruitingsList from BackgroundJS");
-							debug(response.recruitingsList);
+							conf.debug("Getting the recruitingsList from BackgroundJS");
+							conf.debug(response.recruitingsList);
 							
 							$scope.parseRecruitingsList(response.recruitingsList);
 							
-							debug("recruitingsList parsed");
-							debug($scope.recruitingsList);
+							conf.debug("recruitingsList parsed");
+							conf.debug($scope.recruitingsList);
 						}
 						
 						$("#refresh").click();
@@ -388,13 +395,13 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					
 					removeRecruiting.onMessage.addListener(function(response){
 						if(response.recruitingsList){
-							debug("Getting the recruitingsList from BackgroundJS");
-							debug(response.recruitingsList);
+							conf.debug("Getting the recruitingsList from BackgroundJS");
+							conf.debug(response.recruitingsList);
 							
 							$scope.parseRecruitingsList(response.recruitingsList);
 							
-							debug("recruitingsList parsed");
-							debug($scope.recruitingsList);
+							conf.debug("recruitingsList parsed");
+							conf.debug($scope.recruitingsList);
 						}
 						
 						$("#refresh").click();
@@ -410,9 +417,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		return newDate;
 	}
 
-	function debug(param){
-		if(debugging === true){
-			console.log(param);
-		}
-	}
+	$scope.init();
+	
 }]);

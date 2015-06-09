@@ -9,8 +9,6 @@ teamUp.controller("webCtrl", ['$scope', '$location', 'services', function($scope
 	/*	Load the web controller	*/
 	else{
 		
-		$("body").attr("mc-layout", "front");
-		
 		/*	Init variables	*/
 		var locations;
 		var debugging = false;
@@ -26,19 +24,30 @@ teamUp.controller("webCtrl", ['$scope', '$location', 'services', function($scope
 		$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
 		$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
 		
-		/*	Init function	*/
-		/*	Get AppVersion	*/
-		services.getAppVersion().success(function(response){
-			$scope.appVersion = response.version;
-			$("#appVersion").html($scope.appVersion);
-		});
-		
-		/*	Get Locations	*/
-		services.getLocations().success(function(response){
-			locations = response.locations;
-		});
-		
 		/*	Functions declaration	*/
+		/*	Init function	*/
+		$scope.init = function(){
+			
+			/*	Change the layout	*/
+			$("body").attr("mc-layout", "front");
+			
+			/*	Hide the "Back" button	*/
+			$("#backBtn").hide();
+			
+			/*	Remove permanent notification	*/
+			$(".mc-notification-container").html("");
+			
+			/*	Get AppVersion	*/
+			services.getAppVersion().success(function(response){
+				$scope.appVersion = response.version;
+				$("#appVersion").html($scope.appVersion);
+			});
+			
+			$("body").animate({
+				"scrollTop": 0
+			}, "normal");
+		}
+		
 		/*	Login the user	*/
 		$scope.loginUser = function(){
 			var form = $scope.loginForm;
@@ -265,5 +274,6 @@ teamUp.controller("webCtrl", ['$scope', '$location', 'services', function($scope
 			}
 		}
 		
+		$scope.init();
 	}
 }]);

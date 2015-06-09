@@ -1,9 +1,4 @@
 teamUp.factory('services', function($http) {
-	
-	var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
-	//var apiURL = "http://dev.teamup.imperdiblesoft.com/APIs/public.php?action=";
-	//var apiURL = "http://10.160.170.6/TeamUp/APIs/public.php?action=";
-	//var apiURL = "http://localhost/TeamUp/APIs/public.php?action=";
 
    var service = {};
    
@@ -13,13 +8,63 @@ teamUp.factory('services', function($http) {
 			url: param ? '../manifest.json' : 'manifest.json'
 		});
 	};
-	
-    service.getLocations = function(){
-   		return $http({
-   			method: 'GET',
-   			url: apiURL +'getLocations'
+
+	service.getLocations = function(){
+		return $http({
+			method: 'GET',
+			url: conf.apiURL() +'getLocations'
+		});
+	};
+
+	service.createLocation = function(location){
+		return $http({
+			method: 'POST',
+			url: conf.apiURL() +'createLocation',
+			data: {
+				'name': location
+			}
+		});
+	};
+
+	service.getNews = function(location){
+		return $http({
+			method: 'POST',
+			url: conf.apiURL() +'getRecruitings',
+			data: location
+		});
+	};
+
+	service.createRecruiting = function(recruiting){
+		return $http({
+			method: 'POST',
+			url: conf.apiURL() +'createRecruiting',
+			data: recruiting
+		});
+	};
+
+	service.updateRecruiting = function(recruiting){
+		return $http({
+			method: 'POST',
+			url: conf.apiURL() +'updateRecruiting',
+			data: recruiting
+		});
+	};
+
+	service.completeRecruiting = function(recruiting){
+		return $http({
+   			method: 'POST',
+   			url: conf.apiURL() +'completeRecruiting',
+			data: recruiting
    		});
-   };
+	};
+
+	service.removeRecruiting = function(recruiting){
+		return $http({
+   			method: 'POST',
+   			url: conf.apiURL() +'removeRecruiting',
+			data: recruiting
+   		});
+	};
    
    return service;
 });

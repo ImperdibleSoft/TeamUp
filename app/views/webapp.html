@@ -12,13 +12,21 @@
 
 		<!-- View all recruitings -->
 		<label class="mc-switcher" data-ng-show="waiting && !error && user">
-			<input type="checkbox" data-ng-model="viewAllRecruitings" data-ng-change="updateView(this)" />
+			<input type="checkbox" data-ng-model="viewAllRecruitings" />
 			<div class="mc-switch-bg" >
 				<div class="mc-switch" ></div>
 			</div>
 			<span class="mc-label">View all recruitings</span>
 		</label>
 
+		<!-- Vibrate on notifications -->
+		<label class="mc-switcher" data-ng-show="!creatingRecruiting && !error && user">
+			<input type="checkbox" data-ng-model="vibrateOnNotifications" />
+			<div class="mc-switch-bg mc-mobile mc-tablet" >
+				<div class="mc-switch" ></div>
+			</div>
+			<span class="mc-label mc-mobile mc-tablet">Vibrate on notifications</span>
+		</label>
 	</div>
 </div>
 
@@ -89,7 +97,7 @@
 </form>
 
 <!-- Existing recruiting -->
-<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting && recruiting.completed != '1' && recruiting.cancelled != '1' && (!waiting || viewAllRecruitings || recruiting.myRecruiting )">
+<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingOnMyLocation && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting ) && recruiting.location == user.location && recruiting.completed != '1' && recruiting.cancelled != '1' && recruiting.maxPlayers > recruiting.players.length">
 
 	<div class="mc-header">
 		<img style="border-radius: 0px!important;" src="images/logo_128.png" />

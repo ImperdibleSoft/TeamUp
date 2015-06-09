@@ -1,10 +1,5 @@
 /*	App start	*/
-
-	var apiURL = "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
-	//var apiURL = "http://dev.teamup.imperdiblesoft.com/APIs/public.php?action=";
-	//var apiURL = "http://10.160.170.6/TeamUp/APIs/public.php?action=";
-	//var apiURL = "http://localhost/TeamUp/APIs/public.php?action=";
-
+	
 var user = false;
 var recruitingsList = new Array();
 var waiting = false;
@@ -18,7 +13,7 @@ chrome.runtime.onConnect.addListener(function(status){
 	if(status.name == "status"){
 		status.onMessage.addListener(function(response){
 			
-			debug("Asking for status");
+			conf.debug("Asking for status");
 			
 			/* Send user data */
 			status.postMessage({
@@ -28,9 +23,9 @@ chrome.runtime.onConnect.addListener(function(status){
 				'error': errors
 			});
 			
-			debug("Returning user and recruitingsList data");
-			debug(user);
-			debug(recruitingsList);
+			conf.debug("Returning user and recruitingsList data");
+			conf.debug(user);
+			conf.debug(recruitingsList);
 		});
 	}
 });
@@ -40,7 +35,7 @@ chrome.runtime.onConnect.addListener(function(viewAllRecruitings){
 	if(viewAllRecruitings.name == "viewAllRecruitings"){
 		viewAllRecruitings.onMessage.addListener(function(response){
 			
-			debug("Changing user preference. viewAllRecruitings="+ response.viewAllRecruitings);
+			conf.debug("Changing user preference. viewAllRecruitings="+ response.viewAllRecruitings);
 			viewAllRecruitingsOption = response.viewAllRecruitings;
 		});
 	}
@@ -55,7 +50,7 @@ chrome.runtime.onConnect.addListener(function(login){
 			if(response.createLocation){
 				$.ajax({
 					method : 'POST',
-					url : apiURL +'createLocation',
+					url : conf.apiURL() +'createLocation',
 					dataType : 'json', 
 					data : JSON.stringify({'name': response.user.location}),
 					success: function(response2){
@@ -93,14 +88,14 @@ chrome.runtime.onConnect.addListener(function(create){
 		
 		create.onMessage.addListener(function(response){
 			
-			debug("Getting new recruiting");
-			debug(response.create);
+			conf.debug("Getting new recruiting");
+			conf.debug(response.create);
 			
 			response.create.players = response.create.players.toString();
 			
 			$.ajax({
 				method : 'POST',
-				url : apiURL +'createRecruiting',
+				url : conf.apiURL() +'createRecruiting',
 				dataType : 'json', 
 				data : JSON.stringify( response.create ),
 				success : function(response2) {
@@ -129,8 +124,8 @@ chrome.runtime.onConnect.addListener(function(create){
 			/*	Stores the new recruiting on the list	*/
 			recruitingsList.push(response.create);
 			
-			debug("Added to BackgroundJS recruitingsList");
-			debug(recruitingsList);
+			conf.debug("Added to BackgroundJS recruitingsList");
+			conf.debug(recruitingsList);
 			
 			/*	Send data to Extension UI	*/
 			var recruitings = chrome.runtime.connect({name: "recruitings"});
@@ -138,8 +133,8 @@ chrome.runtime.onConnect.addListener(function(create){
 				'recruitings': recruitingsList
 			});
 			
-			debug("Returning recruitingsList to UI");
-			debug(recruitingsList);
+			conf.debug("Returning recruitingsList to UI");
+			conf.debug(recruitingsList);
 		});
 	}
 });
@@ -149,7 +144,7 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 	if(updateRecruiting.name == "updateRecruiting"){
 		updateRecruiting.onMessage.addListener(function(response){
 			
-			debug("Updating the recruiting with ID "+ response.recruiting.id);
+			conf.debug("Updating the recruiting with ID "+ response.recruiting.id);
 			
 			if(response.recruiting.players.indexOf( user.name ) >= 0){
 				waiting = true;
@@ -169,7 +164,7 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 			
 			$.ajax({
 				type : 'post',
-				url : apiURL +'updateRecruiting',
+				url : conf.apiURL() +'updateRecruiting',
 				dataType : 'json', 
 				data : JSON.stringify(data),
 				success : function(response) {
@@ -192,7 +187,7 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 	if(removeRecruiting.name == "removeRecruiting"){
 		removeRecruiting.onMessage.addListener(function(response){
 			
-			debug("Removing recruiting with ID "+ response.id);
+			conf.debug("Removing recruiting with ID "+ response.id);
 			
 			var data = {
 				"id": response.id,
@@ -201,7 +196,7 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 			
 			$.ajax({
 				type : 'post',
-				url : apiURL +'removeRecruiting',
+				url : conf.apiURL() +'removeRecruiting',
 				dataType : 'json', 
 				data : JSON.stringify(data),
 				success : function(response) {
@@ -214,8 +209,8 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 						recruitingsList.push( response.recruitings[x] );
 					}
 					
-					debug("Returning new recruitingsList to UI");
-					debug(recruitingsList);
+					conf.debug("Returning new recruitingsList to UI");
+					conf.debug(recruitingsList);
 							
 					removeRecruiting.postMessage({
 						'recruitingsList': recruitingsList
@@ -269,7 +264,7 @@ function getNews(){
 		
 		$.ajax({
 			type : 'post',
-			url : apiURL +'getRecruitings',
+			url : conf.apiURL() +'getRecruitings',
 			dataType : 'json', 
 			data : JSON.stringify(data),
 			success : function(response) {
@@ -325,7 +320,7 @@ function getNews(){
 				
 					/*	Set the match as completed	*/
 					if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
-						debug("Completing recruiting with ID "+ temp1.id);
+						conf.debug("Completing recruiting with ID "+ temp1.id);
 						
 						var data = {
 							"id": temp1.id,
@@ -334,7 +329,7 @@ function getNews(){
 						
 						$.ajax({
 							type : 'post',
-							url : apiURL +'completeRecruiting',
+							url : conf.apiURL() +'completeRecruiting',
 							dataType : 'json', 
 							data : JSON.stringify(data),
 							success : function(response) {
@@ -365,7 +360,7 @@ function getNews(){
 				changeIcon( notificationCount );
 			},
 			complete : function(response) {
-					setTimeout(function(){ getNews(); }, 5000);
+					setTimeout(function(){ getNews(); }, conf.minutesToWaitBetweenChecks * 1000 * 60);
 			},
 			error: function(connection, text, error){
 				var temp = {
@@ -391,30 +386,19 @@ function changeIcon(param){
 /*	Verify if this recruiting notification should be shown	*/
 function shouldShowThisNotification(recruiting){
 	
-	if((!waiting || recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitingsOption) && recruiting.completed == '0' && !recruiting.cancelled == '0'){
+	if((!waiting || recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitingsOption) && (!recruiting.completed || recruiting.completed == '0') && ( !recruiting.cancelled || recruiting.cancelled== '0')){
 		var value = true;
 	}
 	else{
 		var value = false;
 	}
 	
-	debug("Should show '"+ recruiting.description +"' notification: "+ value);
+	conf.debug("Should show '"+ recruiting.description +"' notification: "+ value);
 	return value;
 }
 
 /*	Creates a new Notification	*/
-function showNotification(title, msg, id){
-
-	var options = {
-		"type": "basic",
-		"title": title,
-		"message": msg,
-		"iconUrl": "/images/logo_128.png"
-	}
-	var num = parseInt( Math.random() * 1000000 );
-	var wkn = chrome.notifications;
-	var notif = wkn.create(num+"", options, function(){});
-}
+showNotification = conf.showNotification;
 
 function connectionError(param){
 	if(errors == false){
@@ -446,12 +430,6 @@ function connectionRestored(){
 	connError.postMessage({
 		'error': errors
 	});
-}
-
-function debug(param){
-	if(debugging == true){
-		console.log(param);
-	}
 }
 
 
