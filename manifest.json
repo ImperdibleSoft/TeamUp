@@ -3,7 +3,7 @@
 
 	"name": "Team Up!",
 	"description": "Team Up! is a simple extension for creating recruitments.",
-	"version": "1.5.2",
+	"version": "1.5.3",
 	"author": "ImperdibleSoft",
 	
 	"icons": {
@@ -24,7 +24,11 @@
 	
 	"content_scripts": [{
 		"matches": ["http://teamup.imperdiblesoft.com/*"],
-		"js": ["js/jquery.min.js"]
+		"js": [
+			"js/jquery.min.js", 
+			"app/conf.js",
+			"js/informant.js"
+		]
 	}],
 	
 	"background": {

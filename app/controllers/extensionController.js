@@ -72,8 +72,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 				if(response.error){
 					$scope.error = response.error;
 				}
-				
-				$("#refresh").click();
 			});
 			
 			/* Create recruitings connection	*/
@@ -84,7 +82,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						conf.debug(response.recruitings);
 						
 						$scope.parseRecruitingsList(response.recruitings);
-						$("#refresh").click();
 						
 						conf.debug("recruitingsList parsed");
 						conf.debug($scope.recruitingsList);
@@ -98,7 +95,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					connError.onMessage.addListener(function(response){
 						
 						$scope.error = response.error;
-						$("#refresh").click();
 						
 					});
 				}
@@ -248,8 +244,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						conf.debug("recruitingsList parsed");
 						conf.debug($scope.recruitingsList);
 					}
-					
-					$("#refresh").click();
 				});
 			}
 			
@@ -289,6 +283,8 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 			
 			$scope.recruitingsList.push( recru );
 		}
+		
+		$("#refresh").click();
 	}
 	
 	$scope.refreshPage = function(){
@@ -341,8 +337,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 								conf.debug("recruitingsList parsed");
 								conf.debug($scope.recruitingsList);
 							}
-							
-							$("#refresh").click();
 						});
 					}
 				}
@@ -375,8 +369,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 							conf.debug("recruitingsList parsed");
 							conf.debug($scope.recruitingsList);
 						}
-						
-						$("#refresh").click();
 					});
 				}
 			}
@@ -403,8 +395,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 							conf.debug("recruitingsList parsed");
 							conf.debug($scope.recruitingsList);
 						}
-						
-						$("#refresh").click();
 					});
 				}
 			}

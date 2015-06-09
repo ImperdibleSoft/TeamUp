@@ -164,7 +164,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 		$scope.tempRecruitingsList = new Array();
 		
 		for(var x in param){
-			
+		
 			/*	Parse data	*/
 			/*	Fix the ID key	*/
 			if(param[x].id_recruiting){
@@ -184,74 +184,11 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 				
 			}
 			
-			var temp1 = param[x];
-			var alreadyNotified = false;
-			var remainingPlayers = false;
-			
-			/*	Verify already checked elements	*/
-			for(var y in $scope.recruitingsList){
-				var temp2 = $scope.recruitingsList[y];
-				
-				/*	Already checked recruiting	*/
-				if(temp1.id == temp2.id){
-					alreadyNotified = true;
-					
-					if(temp1.players.length != temp2.players.length){
-						remainingPlayers = temp1.maxPlayers - temp1.players.length;
-					}
-					break;
-				}
-			}
-			
-			/*	Show notification	*/
-			if(shouldShowThisNotification(temp1)){
-				
-				if(!alreadyNotified){
-					remainingPlayers = temp1.maxPlayers - temp1.players.length;
-					
-					if(remainingPlayers > 0){
-						showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id, $scope.vibrateOnNotifications);
-					}
-				}
-				else if(remainingPlayers !== false){
-					if(remainingPlayers > 0){
-						showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id, $scope.vibrateOnNotifications);
-					}
-					else{
-						showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id, $scope.vibrateOnNotifications);
-					}
-				}
-			}
-		
-			/*	Set the match as completed	*/
-			if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
-				conf.debug("Completing recruiting with ID "+ temp1.id);
-				
+			/*	If the recruiting has too much time or has no players	*/
+			if(param[x].difference >= 2100 || param[x].players.length <= 0){
 				var data = {
-					"id": temp1.id,
-					"location": $scope.user.location
-				};
-				
-				services.completeRecruiting(data);
-			}
-			
-			/*	Create the recruiting	*/
-			var recru = new Recruiting(temp1);
-			
-			/*	Add players to the recruiting	*/
-			for(var y in temp1.players){
-				recru.addPlayer(temp1.players[y]);
-				
-				if(temp1.players[y] == $scope.user.name && recru.completed == false){
-					$scope.waiting = true;
-					recru.myRecruiting = true;
-				}
-			}
-			
-			if(recru.players.length <= 0){
-				recru.cancelled = "1";
-				var data = {
-					'id': recru.id
+					'id': param[x].id,
+					'location': $scope.user.location
 				}
 				services.removeRecruiting(data).success(function(response){
 					if(response.recruitings){
@@ -266,12 +203,81 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 				});
 			}
 			
-			/*	Verify if there are recruitings on my location	*/
-			if(recru.location == $scope.user.location && recru.completed == false){
-				$scope.recruitingOnMyLocation = true;
-			}
+			/*	If has the correct time and has players	*/
+			else{
+				
+				var temp1 = param[x];
+				var alreadyNotified = false;
+				var remainingPlayers = false;
+				
+				/*	Verify already checked elements	*/
+				for(var y in $scope.recruitingsList){
+					var temp2 = $scope.recruitingsList[y];
+					
+					/*	Already checked recruiting	*/
+					if(temp1.id == temp2.id){
+						alreadyNotified = true;
+						
+						if(temp1.players.length != temp2.players.length){
+							remainingPlayers = temp1.maxPlayers - temp1.players.length;
+						}
+						break;
+					}
+				}
+				
+				/*	Show notification	*/
+				if(shouldShowThisNotification(temp1)){
+					
+					if(!alreadyNotified){
+						remainingPlayers = temp1.maxPlayers - temp1.players.length;
+						
+						if(remainingPlayers > 0){
+							showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id, $scope.vibrateOnNotifications);
+						}
+					}
+					else if(remainingPlayers !== false){
+						if(remainingPlayers > 0){
+							showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id, $scope.vibrateOnNotifications);
+						}
+						else{
+							showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id, $scope.vibrateOnNotifications);
+						}
+					}
+				}
 			
-			$scope.tempRecruitingsList.push( recru );
+				/*	Set the match as completed	*/
+				if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
+					conf.debug("Completing recruiting with ID "+ temp1.id);
+					
+					var data = {
+						"id": temp1.id,
+						"location": $scope.user.location
+					};
+					
+					services.completeRecruiting(data);
+				}
+				
+				/*	Create the recruiting	*/
+				var recru = new Recruiting(temp1);
+				
+				/*	Add players to the recruiting	*/
+				for(var y in temp1.players){
+					recru.addPlayer(temp1.players[y]);
+					
+					if(temp1.players[y] == $scope.user.name && recru.completed == false){
+						$scope.waiting = true;
+						recru.myRecruiting = true;
+					}
+				}
+								
+				/*	Verify if there are recruitings on my location	*/
+				if(recru.location == $scope.user.location && recru.completed == false){
+					$scope.recruitingOnMyLocation = true;
+				}
+				
+				$scope.tempRecruitingsList.push( recru );
+				
+			}
 		}
 		
 		$scope.recruitingsList = $scope.tempRecruitingsList;
@@ -391,10 +397,25 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 	
 	function showInstallNotification(){
 		var notif = "<div id='installnow' class='mc-notification mc-bg-darkblue'>";
-			notif += "<a href='https://chrome.google.com/webstore/detail/team-up/ggodlfmnafpmahoddgdlngfnhnkfnedj' target='_blank' class='mc-button mc-button-comb' mc-action='download'>Install</a>"
+			notif += "<button id='installExtension' class='mc-button mc-button-comb mc-clickable' mc-action='download' >Install</button>"
 			notif += "<p class='mc-text'>Install chrome extension to still updated</p>";
 		notif += "</div>";
 		$(".mc-notification-container").append( notif );
+		
+		
+		$("#installExtension").on("click", function(){
+			var url = $("link[rel='chrome-webstore-item']").attr("href");
+			chrome.webstore.install(url, 
+			
+			function(response){
+				$("#installExtension").parent(".mc-notification").remove();
+				
+			}, function(error){
+				
+				$("#installExtension").html("Retry");
+				$("#installExtension").attr("mc-action", "refresh");
+			});
+		});
 	}
 	
 	$scope.init();
