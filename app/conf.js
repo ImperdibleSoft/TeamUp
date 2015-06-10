@@ -3,7 +3,7 @@ var conf = {
 	
 	"apiURL": function(){
 		if(conf.debugging){
-			return "http://"+location.host+"/"+ location.pathname +"/APIs/public.php?action=";
+			return "http://192.168.0.10/TeamUp/APIs/public.php?action=";
 		}
 		else{
 			return "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
