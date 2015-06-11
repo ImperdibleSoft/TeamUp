@@ -38,7 +38,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		services.getLocations().success(function(response){
 			locations = response.locations;
 		});
-			
+		
 		/*	Connection with BackgroundJS	*/
 		if(chrome && chrome.runtime && chrome.runtime.connect){
 			
@@ -287,6 +287,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		$("#refresh").click();
 	}
 	
+	/*	Hide and show the page	*/
 	$scope.refreshPage = function(){
 		var speed = 0;
 		$("body > .mc-content").hide(speed, function(){

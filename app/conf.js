@@ -62,6 +62,10 @@ var conf = {
 		
 	},
 	
+	"createCustomSearch": function(){
+		debug("Success");
+	},
+	
 	"debug": function(param){
 		if(conf.debugging === true){
 			console.log(param);

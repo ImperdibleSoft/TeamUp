@@ -8,7 +8,12 @@
 	
 	"icons": {
 		"128": "images/logo_128.png",
-		"24": "images/logo_24.png"
+		"24": "images/logo_24.png",
+		"16": "images/logo_16.png"
+	},
+	
+	"omnibox": {
+		"keyword": "teamup"
 	},
 	
 	"permissions": [

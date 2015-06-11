@@ -8,6 +8,53 @@ var notificationCount = 0;
 var errors = false;
 var debugging = false;
 
+/*	Custom search engine	*/
+chrome.omnibox.onInputStarted.addListener(function(){
+	conf.debug("Now you are searching");
+});
+
+chrome.omnibox.onInputChanged.addListener(function(text, suggest){
+	
+	/*	Event triggered when the omnibox change	*/
+	conf.debug("You changed the text to: "+ text);
+	
+	/*	Create a suggestion list based on text	*/
+	var suggestions = new Array();
+	suggestions.push( new SuggestResult("Hola", "Esto es un saludo") );
+	suggestions.push( new SuggestResult("Adios", "Esto es una despedida") );
+	
+	/*	Return the suggestion list to the UI	*/
+	suggest(suggestions);
+	
+});
+
+chrome.omnibox.onInputEntered.addListener(function(text, disposition){
+	
+	/*	Event triggered when the search is completed/executed	*/
+	conf.debug("You finished your search: "+ text);
+	
+	/**
+	/*	Choose how to display results
+	/*
+	/*	currentTab
+	/*	newForegroundTab
+	/*	newBackgroundTab
+	*/
+	disposition = "newForegroundTab";
+});
+
+chrome.omnibox.onInputCancelled.addListener(function(){
+	conf.debug("You cancelled your search");
+});
+
+var SuggestResult = function(content, description){
+	this.content = content;
+	this.description = description;
+};
+
+
+
+/*	Extension Logic	*/
 /*	Initial conection, verify logged user	*/
 chrome.runtime.onConnect.addListener(function(status){
 	if(status.name == "status"){
@@ -431,7 +478,6 @@ function connectionRestored(){
 		'error': errors
 	});
 }
-
 
 
 
