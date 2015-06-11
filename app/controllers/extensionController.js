@@ -1,19 +1,25 @@
 teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, services){
  
 	/*	Init variables	*/
-	var locations;
-	var debugging = false;
-	
 	$scope.appVersion = "";
 	$scope.error = false;
+	$scope.viewAllRecruitings = false;
+	$scope.vibrateOnNotifications = (mc.isMobile() || mc.isTablet()) ? true : false;;
+	
 	$scope.user = false;
+	$scope.location = "";
+	$scope.locations = false;
+	
 	$scope.waiting = false;
 	$scope.recruitingOnMyLocation = false;
 	$scope.creatingRecruiting = false;
+	
 	$scope.recruitingsList = new Array();
 	$scope.maxPlayers = 4;
+	
 	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
+
 	
 	/*	Functions declaration	*/
 	/*	Init function	*/
@@ -25,9 +31,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		/*	Show the "Back" button	*/
 		$("#backBtn").hide();
 		
-		/*	Shows permanent notification	*/
-		$(".mc-notification-container").html("");
-		
 		/*	Get AppVersion	*/
 		services.getAppVersion().success(function(response){
 			$scope.appVersion = response.version;
@@ -36,10 +39,10 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		
 		/*	Get Locations	*/
 		services.getLocations().success(function(response){
-			locations = response.locations;
+			$scope.locations = response.locations;
 		});
 		
-		/*	Connection with BackgroundJS	*/
+		/*	If there is a user connected	*/
 		if(chrome && chrome.runtime && chrome.runtime.connect){
 			
 			/* Create status connection	*/
@@ -55,11 +58,11 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					$scope.user = response.user;
 				}
 				
-				if(response.recruitingsList){
+				if(response.recruitings){
 					conf.debug("Getting the recruitingsList from BackgroundJS");
-					conf.debug(response.recruitingsList);
+					conf.debug(response.recruitings);
 					
-					$scope.parseRecruitingsList(response.recruitingsList);
+					$scope.parseRecruitingsList(response.recruitings);
 					
 					conf.debug("recruitingsList parsed");
 					conf.debug($scope.recruitingsList);
@@ -74,28 +77,30 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 				}
 			});
 			
-			/* Create recruitings connection	*/
-			chrome.runtime.onConnect.addListener(function(recruitings){
-				if(recruitings.name == "recruitings"){
-					recruitings.onMessage.addListener(function(response){
-						conf.debug("Getting the recruitingsList from BackgroundJS");
-						conf.debug(response.recruitings);
-						
-						$scope.parseRecruitingsList(response.recruitings);
-						
-						conf.debug("recruitingsList parsed");
-						conf.debug($scope.recruitingsList);
+			/* Create recruitings connection listener	*/
+			chrome.runtime.onConnect.addListener(function(updateRecruitings){
+				if(updateRecruitings.name == "updateRecruitings"){
+					updateRecruitings.onMessage.addListener(function(response){
+					
+						if(response.recruitings){
+							conf.debug("Getting the recruitingsList from BackgroundJS");
+							conf.debug(response.recruitings);
+							
+							$scope.parseRecruitingsList(response.recruitings);
+							
+							conf.debug("recruitingsList parsed");
+							conf.debug($scope.recruitingsList);
+						}
 					});
 				}
 			});
 			
-			/* Create connError connection	*/
+			/* Create connError connection listener	*/
 			chrome.runtime.onConnect.addListener(function(connError){
 				if(connError.name == "connError"){
 					connError.onMessage.addListener(function(response){
 						
 						$scope.error = response.error;
-						
 					});
 				}
 			});
@@ -116,8 +121,8 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 			if(chrome && chrome.runtime && chrome.runtime.connect){
 				
 				var existingLocation = false;
-				for(var x in locations){
-					if( locations[x].name ==  $scope.user.location ){
+				for(var x in $scope.locations){
+					if( $scope.locations[x].name ==  $scope.user.location ){
 						existingLocation = true;
 					}
 				}
@@ -130,18 +135,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					'user': $scope.user,
 					'createLocation': !existingLocation
 				});
-				
-				login.onMessage.addListener(function(response){
-					
-				});
-				
-				/*	Disconnection	*/
-				login.onDisconnect.addListener(function(event){
-					
-				});
-				
 			}
-			
 		}
 	}
 	
@@ -151,13 +145,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		
 		/*	Call the createLocation service	*/
 		if(chrome && chrome.runtime && chrome.runtime.connect){
-			
-			var existingLocation = false;
-			for(var x in locations){
-				if( locations[x].name ==  $scope.user.location ){
-					existingLocation = true;
-				}
-			}
 			
 			/* Connect width background.js	*/
 			var logout = chrome.runtime.connect({name: "logout"});
@@ -169,25 +156,6 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		}
 		
 		location.reload();
-	}
-	
-	/*	Updates the list view	*/
-	$scope.updateView = function(e){
-		if(chrome && chrome.runtime && chrome.runtime.connect){
-			
-			/* Create status connection	*/
-			var viewAllRecruitings = chrome.runtime.connect({name: "viewAllRecruitings"});
-			
-			/*	Ask for conected user	*/
-			viewAllRecruitings.postMessage({
-				'viewAllRecruitings': e.viewAllRecruitings
-			});
-			
-			viewAllRecruitings.onMessage.addListener(function(response){
-				
-			});
-		}
-		
 	}
 	
 	/*	Create Recruiting	*/
@@ -218,24 +186,24 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 				"location": $scope.user.location
 			}
 			var temp = new Recruiting(data);
-			temp.addPlayer();
 			
 			if(chrome && chrome.runtime && chrome.runtime.connect){
 				
 				/* Connect width background.js	*/
 				var create = chrome.runtime.connect({name: "create"});
 				
+				conf.debug("Sending new recruiting");
+				conf.debug(temp);
+				
 				/*	Ask for conected user	*/
 				create.postMessage({
 					'create': temp
 				});
 				
-				conf.debug("Sending new recruiting");
-				conf.debug(temp);
-				
 				create.onMessage.addListener(function(response){
 					
-					if(response.recruitingsList){
+					if(response.recruitings){
+						
 						conf.debug("Getting the recruitingsList from BackgroundJS");
 						conf.debug(response.recruitings);
 						
@@ -243,6 +211,12 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						
 						conf.debug("recruitingsList parsed");
 						conf.debug($scope.recruitingsList);
+						
+						for(var x in response.recruitings){
+							if($scope.recruitingsList[x].description == temp.description && $scope.recruitingsList[x].maxPlayers == temp.maxPlayers && $scope.recruitingsList[x].location == temp.location){
+								$scope.recruitingsList[x].addPlayer();
+							}
+						}
 					}
 				});
 			}
@@ -251,48 +225,62 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		}
 	}
 	
-	/*	Parse a list of objects into a list of Recruitings	*/
-	$scope.parseRecruitingsList = function(param){
-		$scope.waiting = false;
-		$scope.recruitingsList = new Array();
-		for(var x in param){
-			var temp = param[x];
-			var data = {
-				"id": temp.id ? temp.id : false,
-				"description": temp.description,
-				"location": temp.location,
-				"maxPlayers": temp.maxPlayers,
-				"players": temp.players,
-				"date": temp.date ? temp.date : false,
-				"completed": (temp.completed && temp.completed == "1") ? temp.completed: false
-			};
-			
-			var recru = new Recruiting(data);
-			for(var y in temp.players){
-				recru.addPlayer(temp.players[y]);
-				
-				if(temp.players[y] == $scope.user.name && recru.completed == false){
-					$scope.waiting = true;
-					recru.myRecruiting = true;
-				}
-			}
-			
-			if(recru.location == $scope.user.location && recru.completed == false){
-				$scope.recruitingOnMyLocation = true;
-			}
-			
-			$scope.recruitingsList.push( recru );
-		}
-		
-		$("#refresh").click();
-	}
-	
 	/*	Hide and show the page	*/
 	$scope.refreshPage = function(){
 		var speed = 0;
 		$("body > .mc-content").hide(speed, function(){
 			$("body > .mc-content").show(speed);
 		});
+	}
+	
+	/*	Updates the list view	*/
+	$scope.setViewAllRecruitings = function(e){
+		if(chrome && chrome.runtime && chrome.runtime.connect){
+			
+			/* Create status connection	*/
+			var setViewAllRecruitings = chrome.runtime.connect({name: "setViewAllRecruitings"});
+			
+			/*	Ask for conected user	*/
+			setViewAllRecruitings.postMessage({
+				'viewAllRecruitings': e.viewAllRecruitings
+			});
+		}
+		
+	}
+	/*	Parse a list of objects into a list of Recruitings	*/
+	$scope.parseRecruitingsList = function(param){
+		$scope.waiting = false;
+		$scope.recruitingOnMyLocation = false;
+		$scope.tempRecruitingsList = new Array();
+		
+		for(var x in param){
+		
+			/*	Parse data	*/
+			var temp1 = param[x];
+			
+			/*	Create the recruiting	*/
+			var recru = new Recruiting(temp1);
+			
+			/*	Add players to the recruiting	*/
+			for(var y in temp1.players){
+				recru.addPlayer(temp1.players[y]);
+				
+				if(temp1.players[y] == $scope.user.name && recru.completed == false){
+					$scope.waiting = true;
+					recru.myRecruiting = true;
+				}
+			}
+			
+			/*	Verify if there are recruitings on my location	*/
+			if(recru.location == $scope.user.location && recru.completed == false){
+				$scope.recruitingOnMyLocation = true;
+			}
+			
+			$scope.tempRecruitingsList.push( recru );
+		}
+		
+		$scope.recruitingsList = $scope.tempRecruitingsList;
+		$("#refresh").click();
 	}
 	
 	/*	Recruiting class	*/
@@ -329,11 +317,11 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 						});
 						
 						updateRecruiting.onMessage.addListener(function(response){
-							if(response.recruitingsList){
+							if(response.recruitings){
 								conf.debug("Getting the recruitingsList from BackgroundJS");
-								conf.debug(response.recruitingsList);
+								conf.debug(response.recruitings);
 								
-								$scope.parseRecruitingsList(response.recruitingsList);
+								$scope.parseRecruitingsList(response.recruitings);
 								
 								conf.debug("recruitingsList parsed");
 								conf.debug($scope.recruitingsList);
@@ -346,62 +334,42 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		
 		this.removePlayer = function(){
 			if(self.players.indexOf( $scope.user.name ) >= 0){
-				self.players.splice( self.players.indexOf( $scope.user.name ), 1 );
+				var temp = new Array();
+				for(var x in self.players){
+					temp.push( self.players[x] );
+				}
+				temp.splice( self.players.indexOf( $scope.user.name ), 1 );
 				
+				if(self.players.length <= 0){
+					self.cancelled = "1";
+				}
+		
+				var data = {
+					'id': self.id,
+					'description': self.description,
+					'maxPlayers': self.maxPlayers,
+					'players': temp,
+					'location': self.location
+				};
 				if(chrome && chrome.runtime && chrome.runtime.connect){
+				
 					/* Update a recruiting	*/
 					var updateRecruiting = chrome.runtime.connect({name: "updateRecruiting"});
-					
+				
+					/* Update a recruiting	*/
 					conf.debug("Sending updated recruiting to BackgroundJS");
-					conf.debug(self);
+					conf.debug(data);
 						
 					/*	Send the current recruiting	*/
 					updateRecruiting.postMessage({
-						'recruiting': self
-					});
-					
-					updateRecruiting.onMessage.addListener(function(response){
-						if(response.recruitingsList){
-							conf.debug("Getting the recruitingsList from BackgroundJS");
-							conf.debug(response.recruitingsList);
-							
-							$scope.parseRecruitingsList(response.recruitingsList);
-							
-							conf.debug("recruitingsList parsed");
-							conf.debug($scope.recruitingsList);
-						}
-					});
-				}
-			}
-			
-			if(self.players.length <= 0){
-				
-				if(chrome && chrome.runtime && chrome.runtime.connect){
-					
-					/* Create status connection	*/
-					var removeRecruiting = chrome.runtime.connect({name: "removeRecruiting"});
-					
-					/*	Ask for conected user	*/
-					removeRecruiting.postMessage({
-						'id': self.id
-					});
-					
-					removeRecruiting.onMessage.addListener(function(response){
-						if(response.recruitingsList){
-							conf.debug("Getting the recruitingsList from BackgroundJS");
-							conf.debug(response.recruitingsList);
-							
-							$scope.parseRecruitingsList(response.recruitingsList);
-							
-							conf.debug("recruitingsList parsed");
-							conf.debug($scope.recruitingsList);
-						}
+						'recruiting': data
 					});
 				}
 			}
 		}
 	};
 	
+	/*	Custom format date	*/
 	var formatDate = function(param){
 		var newDate = param.substring(11, 16);
 		

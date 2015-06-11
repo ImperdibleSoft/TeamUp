@@ -1,12 +1,15 @@
 /*	App start	*/
 	
+/*	Init variables	*/
+var error = false;
+var viewAllRecruitings = false;
+
 var user = false;
-var recruitingsList = new Array();
+
 var waiting = false;
-var viewAllRecruitingsOption = false;
 var notificationCount = 0;
-var errors = false;
-var debugging = false;
+
+var recruitingsList = new Array();
 
 /*	Custom search engine	*/
 chrome.omnibox.onInputStarted.addListener(function(){
@@ -53,9 +56,8 @@ var SuggestResult = function(content, description){
 };
 
 
-
 /*	Extension Logic	*/
-/*	Initial conection, verify logged user	*/
+/*	Status connection, verify logged user	*/
 chrome.runtime.onConnect.addListener(function(status){
 	if(status.name == "status"){
 		status.onMessage.addListener(function(response){
@@ -65,9 +67,7 @@ chrome.runtime.onConnect.addListener(function(status){
 			/* Send user data */
 			status.postMessage({
 				'user': user,
-				'recruitingsList': recruitingsList,
-				'viewAllRecruitings': viewAllRecruitingsOption,
-				'error': errors
+				'recruitings': recruitingsList
 			});
 			
 			conf.debug("Returning user and recruitingsList data");
@@ -77,23 +77,17 @@ chrome.runtime.onConnect.addListener(function(status){
 	}
 });
 
-/*	viewAllRecruitings connection, change the user preference	*/
-chrome.runtime.onConnect.addListener(function(viewAllRecruitings){
-	if(viewAllRecruitings.name == "viewAllRecruitings"){
-		viewAllRecruitings.onMessage.addListener(function(response){
-			
-			conf.debug("Changing user preference. viewAllRecruitings="+ response.viewAllRecruitings);
-			viewAllRecruitingsOption = response.viewAllRecruitings;
-		});
-	}
-});
-
 /*	Login conection, Logs in the user	*/
 chrome.runtime.onConnect.addListener(function(login){
 	if(login.name == "login"){
 		login.onMessage.addListener(function(response){
-			user = response.user;
 			
+			/*	Save user data	*/
+			if(response.user){
+				user = response.user;
+			}
+			
+			/*	Create a new location	*/
 			if(response.createLocation){
 				$.ajax({
 					method : 'POST',
@@ -135,10 +129,8 @@ chrome.runtime.onConnect.addListener(function(create){
 		
 		create.onMessage.addListener(function(response){
 			
-			conf.debug("Getting new recruiting");
+			conf.debug("Creating new recruiting");
 			conf.debug(response.create);
-			
-			response.create.players = response.create.players.toString();
 			
 			$.ajax({
 				method : 'POST',
@@ -148,15 +140,18 @@ chrome.runtime.onConnect.addListener(function(create){
 				success : function(response2) {
 					connectionRestored();
 					
-					recruitingsList = new Array();
-					for(var x in response2.recruitings){
-						response2.recruitings[x].id = response2.recruitings[x].id_recruiting;
-						response2.recruitings[x].players = response2.recruitings[x].players.split(",");
-						recruitingsList.push( response2.recruitings[x] );
-					}
+					conf.debug("Getting the recruitingsList from BackgroundJS");
+					conf.debug(response2.recruitings);
 					
-					/*	Show the notification	*/
-					showNotification("New Recruiting", "You have created a new recruiting named "+ response.create.description +", with "+ response.create.maxPlayers +" players", response.create.id);
+					parseRecruitingsList(response2.recruitings);
+					
+					conf.debug("recruitingsList parsed");
+					conf.debug(recruitingsList);
+					
+					create.postMessage({
+						"recruitings": recruitingsList
+					});
+					
 				},
 				error: function(connection, text, error){
 					var temp = {
@@ -215,53 +210,18 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 				dataType : 'json', 
 				data : JSON.stringify(data),
 				success : function(response) {
-					connectionRestored();},
-				error: function(connection, text, error){
-					var temp = {
-						"connection": connection,
-						"text": text,
-						"error": error
-					}
-					connectionError(temp);
-				}
-			});
-		});
-	}
-});
-
-/*	RemoveRecruiting connection, delete a recruiting	*/
-chrome.runtime.onConnect.addListener(function(removeRecruiting){
-	if(removeRecruiting.name == "removeRecruiting"){
-		removeRecruiting.onMessage.addListener(function(response){
-			
-			conf.debug("Removing recruiting with ID "+ response.id);
-			
-			var data = {
-				"id": response.id,
-				"location": user.location
-			};
-			
-			$.ajax({
-				type : 'post',
-				url : conf.apiURL() +'removeRecruiting',
-				dataType : 'json', 
-				data : JSON.stringify(data),
-				success : function(response) {
 					connectionRestored();
 					
-					recruitingsList = new Array();
-					for(var x in response.recruitings){
-						response.recruitings[x].id = response.recruitings[x].id_recruiting;
-						response.recruitings[x].players = response.recruitings[x].players.split(",");
-						recruitingsList.push( response.recruitings[x] );
+					if(response.recruitings){
+						parseRecruitingsList(response.recruitings);
+						
+						/* Create updateRecruitings connection	*/
+						var updateRecruitings = chrome.runtime.connect({name: "updateRecruitings"});
+						
+						updateRecruiting.postMessage({
+							"recruitings": recruitingsList
+						});
 					}
-					
-					conf.debug("Returning new recruitingsList to UI");
-					conf.debug(recruitingsList);
-							
-					removeRecruiting.postMessage({
-						'recruitingsList': recruitingsList
-					});
 				},
 				error: function(connection, text, error){
 					var temp = {
@@ -272,34 +232,126 @@ chrome.runtime.onConnect.addListener(function(removeRecruiting){
 					connectionError(temp);
 				}
 			});
-		
 		});
 	}
 });
 
-/*	Recruitings conection, get the recruiting list	*/
-chrome.runtime.onConnect.addListener(function(recruitings){
-	if(recruitings.name == "recruitings"){
-		recruitings.postMessage({
-			'recruitings': recruitingsList ? recruitingsList : false
-		});
-	}
-});
-
-/* Conexión logout, cierra sesión */
-chrome.runtime.onConnect.addListener(function(logout){
-	if(logout.name == "logout"){
-		
-		logout.onMessage.addListener(function(response){
-			logeado = false;
-			mi_usuario = "";
+/*	setViewAllRecruitings connection, change the user preference	*/
+chrome.runtime.onConnect.addListener(function(setViewAllRecruitings){
+	if(setViewAllRecruitings.name == "setViewAllRecruitings"){
+		setViewAllRecruitings.onMessage.addListener(function(response){
 			
-			if(response.cerrar == true){
-				cerrar_ventana();
-			}
+			conf.debug("Changing user preference. setViewAllRecruitings="+ response.viewAllRecruitings);
+			viewAllRecruitings = response.viewAllRecruitings;
 		});
 	}
 });
+
+/*	Parse a list of objects into a list of Recruitings	*/
+var parseRecruitingsList = function(param){
+	waiting = false;
+	var tempRecruitingsList = new Array();
+
+	for(var x in param){
+
+		/*	Parse data	*/
+		/*	Fix the ID key	*/
+		if(param[x].id_recruiting){
+			param[x].id = param[x].id_recruiting;
+		}
+		
+		/*	Converts players into an Array	*/
+		if( typeof(param[x].players) !== "object" ){
+			if( param[x].players.indexOf(",") >= 0 ){
+				param[x].players = param[x].players.split(",");
+			}
+			else if(param[x].players != ""){
+				temp = new Array();
+				temp.push( param[x].players );
+				param[x].players = temp;
+			}
+		}
+		
+		/*	If the recruiting has too much time or has no players	*/
+		if(param[x].difference >= 2100 || param[x].players.length <= 0){
+			var data = {
+				'id': param[x].id,
+				'location': user.location
+			}
+			
+			param[x].cancelled = true;
+			
+			tempRecruitingsList.push( param[x] );
+		}
+		
+		/*	If has the correct time and has players	*/
+		else{
+			
+			var temp1 = param[x];
+			var alreadyNotified = false;
+			var remainingPlayers = false;
+			
+			/*	Verify already checked elements	*/
+			for(var y in recruitingsList){
+				var temp2 = recruitingsList[y];
+				
+				/*	Already checked recruiting	*/
+				if(temp1.id == temp2.id){
+					alreadyNotified = true;
+					
+					if(temp1.players.length != temp2.players.length){
+						remainingPlayers = temp1.maxPlayers - temp1.players.length;
+					}
+					break;
+				}
+			}
+			
+			/*	Show notification	*/
+			if(shouldShowThisNotification(temp1)){
+				
+				if(!alreadyNotified){
+					remainingPlayers = temp1.maxPlayers - temp1.players.length;
+					
+					if(remainingPlayers > 0){
+						showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id, false);
+					}
+				}
+				else if(remainingPlayers !== false){
+					if(remainingPlayers > 0){
+						showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id, false);
+					}
+					else{
+						showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id, false);
+					}
+				}
+			}
+		
+			/*	Set the match as completed	*/
+			if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
+				conf.debug("Completing recruiting with ID "+ temp1.id);
+				
+				var data = {
+					"id": temp1.id,
+					"location": user.location
+				};
+				param[x].completed = true;
+			}
+			
+			/*	Add players to the recruiting	*/
+			for(var y in temp1.players){
+				
+				if(temp1.players[y] == user.name && temp1.completed == false){
+					waiting = true;
+					temp1.myRecruiting = true;
+				}
+			}
+			
+			tempRecruitingsList.push( temp1 );
+		}
+	}
+
+	recruitingsList = tempRecruitingsList;
+}
 
 /* Get recruiting list */
 function getNews(){
@@ -316,88 +368,11 @@ function getNews(){
 			data : JSON.stringify(data),
 			success : function(response) {
 				connectionRestored();
-				notificationCount = 0;
 				
-				/* Foreach recruiting*/
-				for(var x in response.recruitings){
-					
-					/*	Parse data	*/
-					response.recruitings[x].id = response.recruitings[x].id_recruiting;
-					response.recruitings[x].players = response.recruitings[x].players.split(",");
-					
-					var temp1 = response.recruitings[x];
-					var alreadyNotified = false;
-					var remainingPlayers = false;
-					
-					/*	Verify already checked elements	*/
-					for(var y in recruitingsList){
-						var temp2 = recruitingsList[y];
-						
-						/*	Already checked recruiting	*/
-						if(temp1.id == temp2.id){
-							alreadyNotified = true;
-							
-							if(temp1.players.length != temp2.players.length){
-								remainingPlayers = temp1.maxPlayers - temp1.players.length;
-							}
-							break;
-						}
-					}
-					
-					/*	Show notification	*/
-					if(shouldShowThisNotification(temp1)){
-						notificationCount++;
-						
-						if(!alreadyNotified){
-							remainingPlayers = temp1.maxPlayers - temp1.players.length;
-							
-							if(remainingPlayers > 0){
-								showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id);
-							}
-						}
-						else if(remainingPlayers !== false){
-							if(remainingPlayers > 0){
-								showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id);
-							}
-							else{
-								showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id);
-							}
-						}
-					}
+				parseRecruitingsList( response.recruitings );
 				
-					/*	Set the match as completed	*/
-					if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
-						conf.debug("Completing recruiting with ID "+ temp1.id);
-						
-						var data = {
-							"id": temp1.id,
-							"location": user.location
-						};
-						
-						$.ajax({
-							type : 'post',
-							url : conf.apiURL() +'completeRecruiting',
-							dataType : 'json', 
-							data : JSON.stringify(data),
-							success : function(response) {
-								connectionRestored();
-							},
-							error: function(connection, text, error){
-								var temp = {
-									"connection": connection,
-									"text": text,
-									"error": error
-								}
-								connectionError(temp);
-							}
-						});
-					}
-				}
-				
-				recruitingsList = response.recruitings;
-				
-				/* Create status connection	*/
-				var updateRecruitings = chrome.runtime.connect({name: "recruitings"});
+				/* Create updateRecruitings connection	*/
+				var updateRecruitings = chrome.runtime.connect({name: "updateRecruitings"});
 				
 				/*	Send recruitings to UI	*/
 				updateRecruitings.postMessage({
@@ -433,7 +408,7 @@ function changeIcon(param){
 /*	Verify if this recruiting notification should be shown	*/
 function shouldShowThisNotification(recruiting){
 	
-	if((!waiting || recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitingsOption) && (!recruiting.completed || recruiting.completed == '0') && ( !recruiting.cancelled || recruiting.cancelled== '0')){
+	if((!waiting || recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitings) && (!recruiting.completed || recruiting.completed == '0') && ( !recruiting.cancelled || recruiting.cancelled== '0')){
 		var value = true;
 	}
 	else{
@@ -448,34 +423,34 @@ function shouldShowThisNotification(recruiting){
 showNotification = conf.showNotification;
 
 function connectionError(param){
-	if(errors == false){
+	if(error == false){
 		var num = parseInt( Math.random() * 1000000 );
 		showNotification("Connection error", "There was a connection error. Please, wait a few minutes while we try to solve the problem.", num);
 	}
-	errors = param;
+	error = param;
 	
 	/* Create connError connection	*/
 	var connError = chrome.runtime.connect({name: "connError"});
 	
 	/*	Send the error	*/
 	connError.postMessage({
-		'error': errors
+		'error': error
 	});
 }
 
 function connectionRestored(){
-	if(errors != false){
+	if(error != false){
 		var num = parseInt( Math.random() * 1000000 );
 		showNotification("Connection restored", "Good news, the connection was restored!", num);
 	}
-	errors = false;
+	error = false;
 	
 	/* Create connError connection	*/
 	var connError = chrome.runtime.connect({name: "connError"});
 	
 	/*	Send the error	*/
 	connError.postMessage({
-		'error': errors
+		'error': error
 	});
 }
 

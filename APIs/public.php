@@ -63,7 +63,7 @@
 	else if( isset($_GET['action']) && $_GET['action'] == "createRecruiting" ){
 	
 		/*	Create a new Recruiting	*/
-		$sql = "INSERT INTO recruitings (id_recruiting, description, location, maxPlayers, players) VALUES ('". $POST->id ."', '". $POST->description ."', '". $POST->location ."', '". $POST->maxPlayers ."', '". $POST->players ."')";
+		$sql = "INSERT INTO recruitings (id_recruiting, description, location, maxPlayers) VALUES ('". $POST->id ."', '". $POST->description ."', '". $POST->location ."', '". $POST->maxPlayers ."')";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
@@ -98,7 +98,7 @@
 			}
 		}
 		$sql = substr($sql, 0, -2);
-		$sql .= " WHERE id_recruiting=". $POST->id;
+		$sql .= ", cancelled='0' WHERE id_recruiting=". $POST->id;
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);

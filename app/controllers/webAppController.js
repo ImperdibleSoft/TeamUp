@@ -2,11 +2,12 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
  
 	/*	Init variables	*/
 	$scope.appVersion = "";
-	$scope.viewAllRecruitings = false;
-	$scope.vibrateOnNotifications = (mc.isMobile() || mc.isTablet()) ? true : false;;
+	$scope.viewAllRecruitingsOption = false;
+	$scope.vibrateOnNotifications = (mc.isMobile() || mc.isTablet()) ? true : false;
 	
 	$scope.user = false;
 	$scope.location = "";
+	$scope.locations = false;
 	
 	$scope.waiting = false;
 	$scope.recruitingOnMyLocation = false;
@@ -84,23 +85,6 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 		$scope.getNews();
 	}
 	
-	/* Get recruiting list */
-	$scope.getNews = function(){
-		
-		if($scope.user){
-			var data = {
-				"location": $scope.user.location
-			}
-			
-			services.getNews(data).success(function(response){
-				
-				$scope.parseRecruitingsList( response.recruitings );
-				
-				setTimeout(function(){ $scope.getNews(); }, conf.minutesToWaitBetweenChecks * 1000 * 60);
-			});
-		}
-	}
-
 	/*	Logout the user	*/
 	$scope.logoutUser = function(){
 		$scope.user = false;
@@ -139,17 +123,19 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 				"location": $scope.user.location
 			}
 			var temp = new Recruiting(data);
-			temp.addPlayer();
 			
 			services.createRecruiting(temp).success(function(response){
 				if(response.recruitings){
 					conf.debug("Getting the recruitingsList from BackgroundJS");
-					conf.debug($scope.recruitingsList);
+					conf.debug(response.recruitings);
 					
 					$scope.parseRecruitingsList(response.recruitings);
 					
 					conf.debug("recruitingsList parsed");
 					conf.debug($scope.recruitingsList);
+					
+					conf.debug("Adding to the Recruiting");
+					temp.addPlayer();
 				}
 			});
 			
@@ -157,161 +143,11 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 		}
 	}
 	
-	/*	Parse a list of objects into a list of Recruitings	*/
-	$scope.parseRecruitingsList = function(param){
-		$scope.waiting = false;
-		$scope.recruitingOnMyLocation = false;
-		$scope.tempRecruitingsList = new Array();
-		
-		for(var x in param){
-		
-			/*	Parse data	*/
-			/*	Fix the ID key	*/
-			if(param[x].id_recruiting){
-				param[x].id = param[x].id_recruiting;
-			}
-			
-			/*	Converts players into an Array	*/
-			if( typeof(param[x].players) !== "object" ){
-				if( param[x].players.indexOf(",") >= 0 ){
-					param[x].players = param[x].players.split(",");
-				}
-				else{
-					temp = new Array();
-					temp.push( param[x].players );
-					param[x].players = temp;
-				}
-				
-			}
-			
-			/*	If the recruiting has too much time or has no players	*/
-			if(param[x].difference >= 2100 || param[x].players.length <= 0){
-				var data = {
-					'id': param[x].id,
-					'location': $scope.user.location
-				}
-				services.removeRecruiting(data).success(function(response){
-					if(response.recruitings){
-						conf.debug("Getting the recruitingsList from BackgroundJS");
-						conf.debug(response.recruitings);
-						
-						$scope.parseRecruitingsList(response.recruitings);
-						
-						conf.debug("recruitingsList parsed");
-						conf.debug($scope.recruitingsList);
-					}
-				});
-			}
-			
-			/*	If has the correct time and has players	*/
-			else{
-				
-				var temp1 = param[x];
-				var alreadyNotified = false;
-				var remainingPlayers = false;
-				
-				/*	Verify already checked elements	*/
-				for(var y in $scope.recruitingsList){
-					var temp2 = $scope.recruitingsList[y];
-					
-					/*	Already checked recruiting	*/
-					if(temp1.id == temp2.id){
-						alreadyNotified = true;
-						
-						if(temp1.players.length != temp2.players.length){
-							remainingPlayers = temp1.maxPlayers - temp1.players.length;
-						}
-						break;
-					}
-				}
-				
-				/*	Show notification	*/
-				if(shouldShowThisNotification(temp1)){
-					
-					if(!alreadyNotified){
-						remainingPlayers = temp1.maxPlayers - temp1.players.length;
-						
-						if(remainingPlayers > 0){
-							showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id, $scope.vibrateOnNotifications);
-						}
-					}
-					else if(remainingPlayers !== false){
-						if(remainingPlayers > 0){
-							showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id, $scope.vibrateOnNotifications);
-						}
-						else{
-							showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id, $scope.vibrateOnNotifications);
-						}
-					}
-				}
-			
-				/*	Set the match as completed	*/
-				if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
-					conf.debug("Completing recruiting with ID "+ temp1.id);
-					
-					var data = {
-						"id": temp1.id,
-						"location": $scope.user.location
-					};
-					
-					services.completeRecruiting(data);
-				}
-				
-				/*	Create the recruiting	*/
-				var recru = new Recruiting(temp1);
-				
-				/*	Add players to the recruiting	*/
-				for(var y in temp1.players){
-					recru.addPlayer(temp1.players[y]);
-					
-					if(temp1.players[y] == $scope.user.name && recru.completed == false){
-						$scope.waiting = true;
-						recru.myRecruiting = true;
-					}
-				}
-								
-				/*	Verify if there are recruitings on my location	*/
-				if(recru.location == $scope.user.location && recru.completed == false){
-					$scope.recruitingOnMyLocation = true;
-				}
-				
-				$scope.tempRecruitingsList.push( recru );
-				
-			}
-		}
-		
-		$scope.recruitingsList = $scope.tempRecruitingsList;
-	}
-	
 	$scope.refreshPage = function(){
 		var speed = 0;
 		$("body > .mc-content").hide(speed, function(){
 			$("body > .mc-content").show(speed);
 		});
-	}
-	
-	/*	Verify if this recruiting notification should be shown	*/
-	function shouldShowThisNotification(recruiting){
-		
-		if((!$scope.waiting || recruiting.players.indexOf($scope.user.name) >= 0 || $scope.viewAllRecruitings) && (!recruiting.completed || recruiting.completed == '0') && ( !recruiting.cancelled || recruiting.cancelled == '0')){
-			var value = true;
-		}
-		else{
-			var value = false;
-		}
-		
-		conf.debug("Should show '"+ recruiting.description +"' notification: "+ value);
-		return value;
-	}
-
-	/*	Creates a new Notification	*/
-	showNotification = conf.showNotification;
-
-	/*	Format date	*/
-	var formatDate = function(param){
-		var newDate = param.substring(11, 16);
-		
-		return newDate;
 	}
 
 	/*	Recruiting class	*/
@@ -395,6 +231,172 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 		}
 	};
 	
+	/*	Custom format date	*/
+	var formatDate = function(param){
+		var newDate = param.substring(11, 16);
+		
+		return newDate;
+	}
+	
+	/*	Parse a list of objects into a list of Recruitings	*/
+	$scope.parseRecruitingsList = function(param){
+		$scope.waiting = false;
+		$scope.recruitingOnMyLocation = false;
+		$scope.tempRecruitingsList = new Array();
+		
+		for(var x in param){
+		
+			/*	Parse data	*/
+			/*	Fix the ID key	*/
+			if(param[x].id_recruiting){
+				param[x].id = param[x].id_recruiting;
+			}
+			
+			/*	Converts players into an Array	*/
+			if( typeof(param[x].players) !== "object" ){
+				if( param[x].players.indexOf(",") >= 0 ){
+					param[x].players = param[x].players.split(",");
+				}
+				else if(param[x].players != ""){
+					temp = new Array();
+					temp.push( param[x].players );
+					param[x].players = temp;
+				}
+			}
+			
+			/*	If the recruiting has too much time or has no players	*/
+			if(param[x].difference >= 2100 || param[x].players.length <= 0){
+				var data = {
+					'id': param[x].id,
+					'location': $scope.user.location
+				}
+				services.removeRecruiting(data).success(function(response){
+					if(response.recruitings){
+						conf.debug("Getting the recruitingsList from BackgroundJS");
+						conf.debug(response.recruitings);
+						
+						$scope.parseRecruitingsList(response.recruitings);
+						
+						conf.debug("recruitingsList parsed");
+						conf.debug($scope.recruitingsList);
+					}
+				});
+			}
+			
+			/*	If has the correct time and has players	*/
+			else{
+				
+				var temp1 = param[x];
+				var alreadyNotified = false;
+				var remainingPlayers = false;
+				
+				/*	Verify already checked elements	*/
+				for(var y in $scope.recruitingsList){
+					var temp2 = $scope.recruitingsList[y];
+					
+					/*	Already checked recruiting	*/
+					if(temp1.id == temp2.id){
+						alreadyNotified = true;
+						
+						if(temp1.players.length != temp2.players.length){
+							remainingPlayers = temp1.maxPlayers - temp1.players.length;
+						}
+						break;
+					}
+				}
+				
+				/*	Show notification	*/
+				if(shouldShowThisNotification(temp1)){
+					
+					if(!alreadyNotified){
+						remainingPlayers = temp1.maxPlayers - temp1.players.length;
+						
+						if(remainingPlayers > 0){
+							showNotification("New recruiting", "There is a new recruiting for \""+ temp1.description +"\",  "+ remainingPlayers +" players remaining", temp1.id, $scope.vibrateOnNotifications);
+						}
+					}
+					else if(remainingPlayers !== false){
+						if(remainingPlayers > 0){
+							showNotification("Recruiting update", "There are only "+ remainingPlayers +" players remaining for \""+ temp1.description +"\"", temp1.id, $scope.vibrateOnNotifications);
+						}
+						else{
+							showNotification("Recruiting update", "All players for \""+ temp1.description +"\" are ready. Let's go!'", temp1.id, $scope.vibrateOnNotifications);
+						}
+					}
+				}
+			
+				/*	Set the match as completed	*/
+				if(temp1.players.length >= temp1.maxPlayers && temp1.completed != "1"){
+					conf.debug("Completing recruiting with ID "+ temp1.id);
+					
+					var data = {
+						"id": temp1.id,
+						"location": $scope.user.location
+					};
+					services.completeRecruiting(data);
+				}
+				
+				/*	Create the recruiting	*/
+				var recru = new Recruiting(temp1);
+				
+				/*	Add players to the recruiting	*/
+				for(var y in temp1.players){
+					recru.addPlayer(temp1.players[y]);
+					
+					if(temp1.players[y] == $scope.user.name && recru.completed == false){
+						$scope.waiting = true;
+						recru.myRecruiting = true;
+					}
+				}
+								
+				/*	Verify if there are recruitings on my location	*/
+				if(recru.location == $scope.user.location && recru.completed == false){
+					$scope.recruitingOnMyLocation = true;
+				}
+				
+				$scope.tempRecruitingsList.push( recru );
+				
+			}
+		}
+		
+		$scope.recruitingsList = $scope.tempRecruitingsList;
+	}
+	
+	/* Get recruiting list */
+	$scope.getNews = function(){
+		
+		if($scope.user){
+			var data = {
+				"location": $scope.user.location
+			}
+			
+			services.getNews(data).success(function(response){
+				
+				$scope.parseRecruitingsList( response.recruitings );
+				
+				setTimeout(function(){ $scope.getNews(); }, conf.minutesToWaitBetweenChecks * 1000 * 60);
+			});
+		}
+	}
+
+	/*	BACKGROUND: Verify if this recruiting notification should be shown	*/
+	function shouldShowThisNotification(recruiting){
+		
+		if((!$scope.waiting || recruiting.players.indexOf($scope.user.name) >= 0 || $scope.viewAllRecruitingsOption) && (!recruiting.completed || recruiting.completed == '0') && ( !recruiting.cancelled || recruiting.cancelled == '0')){
+			var value = true;
+		}
+		else{
+			var value = false;
+		}
+		
+		conf.debug("Should show '"+ recruiting.description +"' notification: "+ value);
+		return value;
+	}
+
+	/*	BACKGROUND: Creates a new Notification	*/
+	showNotification = conf.showNotification;
+
+	/*	WEBAPP: Create notification to install extension	*/
 	function showInstallNotification(){
 		var notif = "<div id='installnow' class='mc-notification mc-bg-darkblue'>";
 			notif += "<button id='installExtension' class='mc-button mc-button-comb mc-clickable' mc-action='download' >Install</button>"
