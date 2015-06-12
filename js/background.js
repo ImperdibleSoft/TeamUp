@@ -67,7 +67,9 @@ chrome.runtime.onConnect.addListener(function(status){
 			/* Send user data */
 			status.postMessage({
 				'user': user,
-				'recruitings': recruitingsList
+				'recruitings': recruitingsList,
+				'viewAllRecruitings': viewAllRecruitings,
+				'error': error
 			});
 			
 			conf.debug("Returning user and recruitingsList data");

@@ -247,6 +247,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 		}
 		
 	}
+	
 	/*	Parse a list of objects into a list of Recruitings	*/
 	$scope.parseRecruitingsList = function(param){
 		$scope.waiting = false;

@@ -12,7 +12,7 @@
 
 		<!-- View all recruitings -->
 		<label class="mc-switcher" data-ng-show="waiting && !error && user">
-			<input type="checkbox" data-ng-model="viewAllRecruitings" data-ng-change="updateView(this)" />
+			<input type="checkbox" data-ng-model="viewAllRecruitings" data-ng-checked="viewAllRecruitings" data-ng-change="setViewAllRecruitings(this)" />
 			<div class="mc-switch-bg" >
 				<div class="mc-switch" ></div>
 			</div>
