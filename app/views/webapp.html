@@ -4,7 +4,7 @@
 		<div class="mc-right" data-ng-if="user">
 		
 			<!-- Create Recruiting button -->
-			<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-if="!waiting && !creatingRecruiting && !error" data-ng-click="createRecruiting()">Create</button>
+			<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-if="!waiting && !creatingRecruiting && !creatingRecruitingPromise && !error" data-ng-click="createRecruiting()">Create</button>
 			
 			<!-- Logout button -->
 			<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="external" data-ng-if="!error" data-ng-click="logoutUser()">Logout</button>

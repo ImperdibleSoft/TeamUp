@@ -339,6 +339,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					temp.push( self.players[x] );
 				}
 				temp.splice( self.players.indexOf( $scope.user.name ), 1 );
+				self.players = temp;
 				
 				if(self.players.length <= 0){
 					self.cancelled = "1";
@@ -349,6 +350,7 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					'description': self.description,
 					'maxPlayers': self.maxPlayers,
 					'players': temp,
+					'cancelled': self.cancelled ? self.cancelled : false,
 					'location': self.location
 				};
 				if(chrome && chrome.runtime && chrome.runtime.connect){
@@ -363,6 +365,18 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 					/*	Send the current recruiting	*/
 					updateRecruiting.postMessage({
 						'recruiting': data
+					});
+					
+					updateRecruiting.onMessage.addListener(function(response){
+						if(response.recruitings){
+							conf.debug("Getting the recruitingsList from BackgroundJS");
+							conf.debug(response.recruitings);
+							
+							$scope.parseRecruitingsList(response.recruitings);
+							
+							conf.debug("recruitingsList parsed");
+							conf.debug($scope.recruitingsList);
+						}
 					});
 				}
 			}

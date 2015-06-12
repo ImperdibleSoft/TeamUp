@@ -1,12 +1,13 @@
 var conf = {
-	"debugging": true,
+	"debugging": false,
 	
 	"apiURL": function(){
 		if(conf.debugging){
 			return "http://localhost/TeamUp/APIs/public.php?action=";
 		}
 		else{
-			return "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
+			return "http://www.imperdiblesoft.com/APIs/teamup/public.php?action=";
+			//return "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
 		}
 	},
 	

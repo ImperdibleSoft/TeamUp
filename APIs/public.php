@@ -98,7 +98,16 @@
 			}
 		}
 		$sql = substr($sql, 0, -2);
-		$sql .= ", cancelled='0' WHERE id_recruiting=". $POST->id;
+		$sql .= ", cancelled='";
+		
+		if(isset($POST->cancelled) && $POST->cancelled != "0" && $POST->cancelled != false){
+			$sql .= "1";
+		}
+		else{
+			$sql .= "0";
+		}
+		
+		$sql .= "' WHERE id_recruiting=". $POST->id;
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);

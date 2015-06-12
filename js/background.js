@@ -201,7 +201,8 @@ chrome.runtime.onConnect.addListener(function(updateRecruiting){
 				"description": response.recruiting.description,
 				"location": response.recruiting.location,
 				"maxPlayers": response.recruiting.maxPlayers,
-				"players": response.recruiting.players
+				"players": response.recruiting.players,
+				"cancelled": response.recruiting.cancelled ? response.recruiting.cancelled : false
 			};
 			
 			$.ajax({
@@ -296,7 +297,7 @@ var parseRecruitingsList = function(param){
 				var temp2 = recruitingsList[y];
 				
 				/*	Already checked recruiting	*/
-				if(temp1.id == temp2.id){
+				if(temp1.id == temp2.id && temp1.completed == temp2.completed){
 					alreadyNotified = true;
 					
 					if(temp1.players.length != temp2.players.length){
@@ -408,7 +409,7 @@ function changeIcon(param){
 /*	Verify if this recruiting notification should be shown	*/
 function shouldShowThisNotification(recruiting){
 	
-	if((!waiting || recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitings) && (!recruiting.completed || recruiting.completed == '0') && ( !recruiting.cancelled || recruiting.cancelled== '0')){
+	if((!waiting || recruiting.players.indexOf(user.name) >= 0 || viewAllRecruitings) && ( !recruiting.cancelled || recruiting.cancelled== '0')){
 		var value = true;
 	}
 	else{

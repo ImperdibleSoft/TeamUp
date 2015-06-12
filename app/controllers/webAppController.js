@@ -1,4 +1,4 @@
-teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($scope, services, $cookies){
+teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', function($scope, services, $cookies, $q){
  
 	/*	Init variables	*/
 	$scope.appVersion = "";
@@ -12,6 +12,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 	$scope.waiting = false;
 	$scope.recruitingOnMyLocation = false;
 	$scope.creatingRecruiting = false;
+	$scope.creatingRecruitingPromise = false;
 	
 	$scope.recruitingsList = new Array();
 	$scope.maxPlayers = 4;
@@ -123,19 +124,28 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 				"location": $scope.user.location
 			}
 			var temp = new Recruiting(data);
+			$scope.creatingRecruitingPromise = true;
 			
 			services.createRecruiting(temp).success(function(response){
 				if(response.recruitings){
-					conf.debug("Getting the recruitingsList from BackgroundJS");
-					conf.debug(response.recruitings);
 					
-					$scope.parseRecruitingsList(response.recruitings);
+					$scope.creatingRecruitingPromise = $q(function(resolve, reject) {
+						conf.debug("Getting the recruitingsList from BackgroundJS");
+						conf.debug(response.recruitings);
+						
+						$scope.parseRecruitingsList(response.recruitings, resolve);
+						
+						conf.debug("recruitingsList parsed");
+						conf.debug($scope.recruitingsList);
+					});
 					
-					conf.debug("recruitingsList parsed");
-					conf.debug($scope.recruitingsList);
-					
-					conf.debug("Adding to the Recruiting");
-					temp.addPlayer();
+					/*	ParseRecruitingsList finished	*/
+					$scope.creatingRecruitingPromise.then(function(response){
+						
+						conf.debug("Adding to the Recruiting");
+						temp.addPlayer();
+						$scope.createRecruitingPromise = false;
+					});
 				}
 			});
 			
@@ -226,7 +236,6 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 						conf.debug($scope.recruitingsList);
 					}
 				});
-					
 			}
 		}
 	};
@@ -239,7 +248,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 	}
 	
 	/*	Parse a list of objects into a list of Recruitings	*/
-	$scope.parseRecruitingsList = function(param){
+	$scope.parseRecruitingsList = function(param, resolve){
 		$scope.waiting = false;
 		$scope.recruitingOnMyLocation = false;
 		$scope.tempRecruitingsList = new Array();
@@ -271,6 +280,10 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 					'location': $scope.user.location
 				}
 				services.removeRecruiting(data).success(function(response){
+					if(resolve){
+						resolve("Finished");						
+					}
+					
 					if(response.recruitings){
 						conf.debug("Getting the recruitingsList from BackgroundJS");
 						conf.debug(response.recruitings);
@@ -280,6 +293,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 						conf.debug("recruitingsList parsed");
 						conf.debug($scope.recruitingsList);
 					}
+					
 				});
 			}
 			
@@ -295,7 +309,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 					var temp2 = $scope.recruitingsList[y];
 					
 					/*	Already checked recruiting	*/
-					if(temp1.id == temp2.id){
+					if(temp1.id == temp2.id && temp1.completed == temp2.completed){
 						alreadyNotified = true;
 						
 						if(temp1.players.length != temp2.players.length){
@@ -348,7 +362,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 						recru.myRecruiting = true;
 					}
 				}
-								
+				
 				/*	Verify if there are recruitings on my location	*/
 				if(recru.location == $scope.user.location && recru.completed == false){
 					$scope.recruitingOnMyLocation = true;
@@ -382,7 +396,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', function($sco
 	/*	BACKGROUND: Verify if this recruiting notification should be shown	*/
 	function shouldShowThisNotification(recruiting){
 		
-		if((!$scope.waiting || recruiting.players.indexOf($scope.user.name) >= 0 || $scope.viewAllRecruitingsOption) && (!recruiting.completed || recruiting.completed == '0') && ( !recruiting.cancelled || recruiting.cancelled == '0')){
+		if((!$scope.waiting || recruiting.players.indexOf($scope.user.name) >= 0 || $scope.viewAllRecruitingsOption) && ( !recruiting.cancelled || recruiting.cancelled == '0')){
 			var value = true;
 		}
 		else{
