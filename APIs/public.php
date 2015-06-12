@@ -100,14 +100,12 @@
 		$sql = substr($sql, 0, -2);
 		$sql .= ", cancelled='";
 		
-		if(isset($POST->cancelled) && $POST->cancelled != "0" && $POST->cancelled != false){
-			$sql .= "1";
-		}
-		else{
-			$sql .= "0";
+		$cancelled = "0";
+		if(isset($POST->cancelled) && $POST->cancelled != "0" && $POST->cancelled != false && ((isset($POST->completed) && ($POST->completed == "1" || $POST->completed == true)) || !isset($POST->players) || (isset($POST->players) && $POST->players != "" && !empty($POST->players)))){
+			$cancelled = "1";
 		}
 		
-		$sql .= "' WHERE id_recruiting=". $POST->id;
+		$sql .= $cancelled. "' WHERE id_recruiting=". $POST->id;
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
 			$error = mysqli_error($conexion);
