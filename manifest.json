@@ -19,7 +19,7 @@
 	"permissions": [
 		"background",
 		"notifications",
-		"http://teamup.imperdiblesoft.com/*"
+		"http://*.imperdiblesoft.com/*"
 	],
 	
 	"browser_action": {
