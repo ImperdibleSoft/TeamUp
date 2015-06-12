@@ -20,8 +20,10 @@ teamUp.directive('autoComplete' ,['services', function(services)  {
 				$("#locationSuggestions").html("");
 				for(var x in locations){
 					
-					var value = new RegExp( $(element).val() );
-					if( value.test( locations[x].name ) ){
+					var value = $(element).val().toLowerCase();
+					
+					var value = new RegExp( value );
+					if( value.test( locations[x].name.toLowerCase() ) ){
 						$("#locationSuggestions").append("<div class='mc-list-item'>"+ locations[x].name +"</div>")
 					}
 				}
