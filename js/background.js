@@ -23,8 +23,7 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest){
 	
 	/*	Create a suggestion list based on text	*/
 	var suggestions = new Array();
-	suggestions.push( new SuggestResult("Hola", "Esto es un saludo") );
-	suggestions.push( new SuggestResult("Adios", "Esto es una despedida") );
+	suggestions.push( new SuggestResult("Hola", "We are working on this feature :)") );
 	
 	/*	Return the suggestion list to the UI	*/
 	suggest(suggestions);
@@ -276,7 +275,7 @@ var parseRecruitingsList = function(param){
 		}
 		
 		/*	If the recruiting has too much time or has no players	*/
-		if(param[x].difference >= 2100 || param[x].players.length <= 0){
+		if(param[x].players.length <= 0){
 			var data = {
 				'id': param[x].id,
 				'location': user.location

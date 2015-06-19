@@ -274,7 +274,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 			}
 			
 			/*	If the recruiting has too much time or has no players	*/
-			if(param[x].difference >= 2100 || param[x].players.length <= 0){
+			if(param[x].players.length <= 0){
 				var data = {
 					'id': param[x].id,
 					'location': $scope.user.location

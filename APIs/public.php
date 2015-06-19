@@ -55,7 +55,25 @@
 		}
 		$recruitings = array();
 		while ($fila = mysqli_fetch_array($resul)){
-			$recruitings[] = limpiar_array($fila);
+			
+			/*	If is an active recruiting	*/
+			if($fila['difference'] < 2100){
+				$recruitings[] = limpiar_array($fila);
+			}
+			
+			/*	If it is an inactive recruiting	*/
+			else{
+				
+				/*	Set the recruiting as inactive	*/
+				$sql = "UPDATE recruitings SET cancelled='1' WHERE id_recruiting='". $POST->id ."'";
+				$resul = mysqli_query($conexion, $sql);
+				if(!$resul){
+					$error = mysqli_error($conexion);
+					$response['error'][] = $error;
+					echo json_encode($response);
+					exit();
+				}
+			}
 		}
 		$response['recruitings'] = $recruitings;	
 	}
@@ -83,7 +101,12 @@
 		}
 		$recruitings = array();
 		while ($fila = mysqli_fetch_array($resul)){
-			$recruitings[] = limpiar_array($fila);
+			
+			/*	If is an active recruiting	*/
+			if($fila['difference'] < 2100){
+				$recruitings[] = limpiar_array($fila);
+			}
+			
 		}
 		$response['recruitings'] = $recruitings;
 	}
@@ -125,14 +148,19 @@
 		}
 		$recruitings = array();
 		while ($fila = mysqli_fetch_array($resul)){
-			$recruitings[] = limpiar_array($fila);
+			
+			/*	If is an active recruiting	*/
+			if($fila['difference'] < 2100){
+				$recruitings[] = limpiar_array($fila);
+			}
+			
 		}
 		$response['recruitings'] = $recruitings;
 	}
 	
 	else if( isset($_GET['action']) && $_GET['action'] == "removeRecruiting" ){
 		
-		/*	Create a new Recruiting	*/
+		/*	Set the recruiting as inactive	*/
 		$sql = "UPDATE recruitings SET cancelled='1' WHERE id_recruiting='". $POST->id ."'";
 		$resul = mysqli_query($conexion, $sql);
 		if(!$resul){
@@ -153,7 +181,12 @@
 		}
 		$recruitings = array();
 		while ($fila = mysqli_fetch_array($resul)){
-			$recruitings[] = limpiar_array($fila);
+			
+			/*	If is an active recruiting	*/
+			if($fila['difference'] < 2100){
+				$recruitings[] = limpiar_array($fila);
+			}
+			
 		}
 		$response['recruitings'] = $recruitings;
 	}

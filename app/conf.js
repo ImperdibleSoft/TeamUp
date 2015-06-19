@@ -1,14 +1,22 @@
 var conf = {
+	"online": true,
 	"debugging": false,
 	
 	"apiURL": function(){
-		if(conf.debugging){
-			return "http://localhost/TeamUp/APIs/public.php?action=";
+		
+		/*	Production enviroment	*/
+		if(conf.online && !conf.debugging){
+			return "http://www.my-teamup.com/APIs/public.php?action=";
 		}
+		
+		/*	Development enviroment	*/
+		else if(conf.online && conf.debugging){
+			return "http://dev.my-teamup.com/APIs/public.php?action=";
+		}
+		
+		/*	Local enviroment	*/
 		else{
-			//return "http://www.imperdiblesoft.com/APIs/teamup/public.php?action=";
-			return "http://teamup.imperdiblesoft.com/APIs/public.php?action=";
-			//return "http://www.my-teamup.com/APIs/public.php?action=";
+			return "APIs/public.php?action=";
 		}
 	},
 	
