@@ -65,7 +65,7 @@
 			else{
 				
 				/*	Set the recruiting as inactive	*/
-				$sql = "UPDATE recruitings SET cancelled='1' WHERE id_recruiting='". $POST->id ."'";
+				$sql = "UPDATE recruitings SET cancelled='1' WHERE id_recruiting='". $fila['id_recruiting'] ."'";
 				$resul = mysqli_query($conexion, $sql);
 				if(!$resul){
 					$error = mysqli_error($conexion);
