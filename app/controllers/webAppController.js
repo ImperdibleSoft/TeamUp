@@ -17,8 +17,10 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 	$scope.recruitingsList = new Array();
 	$scope.maxPlayers = 4;
 	
-	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
+	$scope.namePattern = /^[a-zA-Z0-9_\-\ \.]{3,}$/;
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
+		
+	$scope.isChromeBrowser = conf.isChromeBrowser();
 	
 	/*	Functions declaration	*/
 	/*	Init function	*/
@@ -52,6 +54,11 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 			};
 			
 			$scope.getNews();
+		}
+	
+		/*	Get notification permissions	*/
+		if(Notification && Notification.permission == "granted"){
+			$scope.notificationsAllowed = true;
 		}
 	}
 	
@@ -129,7 +136,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 			services.createRecruiting(temp).success(function(response){
 				if(response.recruitings){
 					
-					$scope.creatingRecruitingPromise = $q(function(resolve, reject) {
+					$scope.createRecruitingPromise = $q(function(resolve, reject) {
 						conf.debug("Getting the recruitingsList from BackgroundJS");
 						conf.debug(response.recruitings);
 						
@@ -140,11 +147,11 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 					});
 					
 					/*	ParseRecruitingsList finished	*/
-					$scope.creatingRecruitingPromise.then(function(response){
+					$scope.createRecruitingPromise.then(function(response){
 						
 						conf.debug("Adding to the Recruiting");
 						temp.addPlayer();
-						$scope.createRecruitingPromise = false;
+						$scope.creatingRecruitingPromise = false;
 					});
 				}
 			});
@@ -309,7 +316,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 					var temp2 = $scope.recruitingsList[y];
 					
 					/*	Already checked recruiting	*/
-					if(temp1.id == temp2.id && temp1.completed == temp2.completed){
+					if(temp1.id == temp2.id){
 						alreadyNotified = true;
 						
 						if(temp1.players.length != temp2.players.length){
@@ -348,6 +355,7 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 						"location": $scope.user.location
 					};
 					services.completeRecruiting(data);
+					temp1.completed = "1";
 				}
 				
 				/*	Create the recruiting	*/
@@ -357,19 +365,29 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 				for(var y in temp1.players){
 					recru.addPlayer(temp1.players[y]);
 					
-					if(temp1.players[y] == $scope.user.name && recru.completed == false){
+					if(temp1.players[y] == $scope.user.name){
 						$scope.waiting = true;
 						recru.myRecruiting = true;
 					}
 				}
 				
-				/*	Verify if there are recruitings on my location	*/
-				if(recru.location == $scope.user.location && recru.completed == false){
-					$scope.recruitingOnMyLocation = true;
+				/*	If it is my recruiting, or if it is not completed	*/
+				if(recru.myRecruiting == true || recru.completed != '1'){
+					
+					/*	Verify if there are recruitings on my location	*/
+					if(recru.location == $scope.user.location){
+						$scope.recruitingOnMyLocation = true;
+					}
+					
+					/*	If the recruiting is completed	*/
+					if(recru.completed == '1'){
+						$scope.waiting = false;
+					}
+					
+					/*	Add the recruiting to the list	*/
+					$scope.tempRecruitingsList.push( recru );
+					
 				}
-				
-				$scope.tempRecruitingsList.push( recru );
-				
 			}
 		}
 		
@@ -412,26 +430,47 @@ teamUp.controller("webAppCtrl", ['$scope', 'services', '$cookies', '$q', functio
 
 	/*	WEBAPP: Create notification to install extension	*/
 	function showInstallNotification(){
-		var notif = "<div id='installnow' class='mc-notification mc-bg-darkblue'>";
+			
+		/*	Create the notification	*/
+		var notif = "<div id='installnow' class='mc-notification mc-bg-darkblue mc-pc mc-tv'>";
 			notif += "<button id='installExtension' class='mc-button mc-button-comb mc-clickable' mc-action='download' >Install</button>"
-			notif += "<p class='mc-text'>Install chrome extension to still updated</p>";
+			notif += "<p class='mc-text'>Install our browser extension to still up to date!</p>";
 		notif += "</div>";
 		$(".mc-notification-container").append( notif );
 		
-		
 		$("#installExtension").on("click", function(){
-			var url = $("link[rel='chrome-webstore-item']").attr("href");
-			chrome.webstore.install(url, 
 			
-			function(response){
-				$("#installExtension").parent(".mc-notification").remove();
+			/*	If we are on Chrome, install the extension	*/
+			if($scope.isChromeBrowser){
+				var url = $("link[rel='chrome-webstore-item']").attr("href");
+				chrome.webstore.install(url, 
 				
-			}, function(error){
-				
-				$("#installExtension").html("Retry");
-				$("#installExtension").attr("mc-action", "refresh");
-			});
+				function(response){
+					$("#installExtension").parent(".mc-notification").remove();
+					
+				}, function(error){
+					
+					$("#installExtension").html("Retry");
+					$("#installExtension").attr("mc-action", "refresh");
+				});
+			}
+			
+			/*	If we are not in chrome, go to Chrome Web Store	*/
+			else{
+				window.open("https://chrome.google.com/webstore/detail/team-up/ggodlfmnafpmahoddgdlngfnhnkfnedj");
+			}
 		});
+	}
+	
+	/*	WEBAPP: Ask the user to allow native notifications	*/
+	$scope.allowNotifications = function(){
+		if(Notification.requestPermission){
+			Notification.requestPermission(function(){
+				if(Notification.permission == "granted"){
+					$scope.notificationsAllowed = true;
+				}
+			});
+		}
 	}
 	
 	$scope.init();

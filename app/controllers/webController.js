@@ -24,6 +24,8 @@ teamUp.controller("webCtrl", ['$scope', '$location', 'services', function($scope
 		$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
 		$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
 		
+		$scope.isChromeBrowser = conf.isChromeBrowser();
+		
 		/*	Functions declaration	*/
 		/*	Init function	*/
 		$scope.init = function(){
@@ -51,22 +53,31 @@ teamUp.controller("webCtrl", ['$scope', '$location', 'services', function($scope
 		}
 		
 		$("#installExtension").on("click", function(){
-			var url = $("link[rel='chrome-webstore-item']").attr("href");
-			chrome.webstore.install(url, 
 			
-			function(response){
-				$("#installExtension").html("Installed");
-				$("#installExtension").removeClass("mc-bg-darkred");
-				$("#installExtension").addClass("mc-bg-green");
-				$("#installExtension").attr("mc-action", "done");
+			/*	If we are on Chrome, install the extension	*/
+			if($scope.isChromeBrowser){
+				var url = $("link[rel='chrome-webstore-item']").attr("href");
+				chrome.webstore.install(url, 
 				
-			}, function(error){
-				
-				$("#installExtension").html("Retry");
-				$("#installExtension").removeClass("mc-bg-green");
-				$("#installExtension").addClass("mc-bg-darkred");
-				$("#installExtension").attr("mc-action", "refresh");
-			});
+				function(response){
+					$("#installExtension").html("Installed");
+					$("#installExtension").removeClass("mc-bg-darkred");
+					$("#installExtension").addClass("mc-bg-green");
+					$("#installExtension").attr("mc-action", "done");
+					
+				}, function(error){
+					
+					$("#installExtension").html("Retry");
+					$("#installExtension").removeClass("mc-bg-green");
+					$("#installExtension").addClass("mc-bg-darkred");
+					$("#installExtension").attr("mc-action", "refresh");
+				});
+			}
+			
+			/*	If we are not in chrome, go to Chrome Web Store	*/
+			else{
+				window.open("https://chrome.google.com/webstore/detail/team-up/ggodlfmnafpmahoddgdlngfnhnkfnedj");
+			}
 		});
 		
 		$scope.init();

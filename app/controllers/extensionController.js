@@ -17,8 +17,10 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 	$scope.recruitingsList = new Array();
 	$scope.maxPlayers = 4;
 	
-	$scope.namePattern = /^[a-zA-Z0-9_]{4,}$/;
+	$scope.namePattern = /^[a-zA-Z0-9_\-\ \.]{3,}$/;
 	$scope.officePattern = /^[a-zA-Z0-9]{3,}\ \-\ [a-zA-Z0-9\ ]{5,}$/;
+		
+	$scope.isChromeBrowser = conf.isChromeBrowser();
 
 	
 	/*	Functions declaration	*/
@@ -266,18 +268,29 @@ teamUp.controller("extensionCtrl", ['$scope', 'services', function($scope, servi
 			for(var y in temp1.players){
 				recru.addPlayer(temp1.players[y]);
 				
-				if(temp1.players[y] == $scope.user.name && recru.completed == false){
+				if(temp1.players[y] == $scope.user.name){
 					$scope.waiting = true;
 					recru.myRecruiting = true;
 				}
 			}
-			
-			/*	Verify if there are recruitings on my location	*/
-			if(recru.location == $scope.user.location && recru.completed == false){
-				$scope.recruitingOnMyLocation = true;
+		
+			/*	If it is my recruiting, or if it is not completed	*/
+			if(recru.myRecruiting == true || recru.completed != '1'){
+				
+				/*	Verify if there are recruitings on my location	*/
+				if(recru.location == $scope.user.location){
+					$scope.recruitingOnMyLocation = true;
+				}
+				
+				/*	If the recruiting is completed	*/
+				if(recru.completed == '1'){
+					$scope.waiting = false;
+				}
+				
+				/*	Add the recruiting to the list	*/
+				$scope.tempRecruitingsList.push( recru );
+				
 			}
-			
-			$scope.tempRecruitingsList.push( recru );
 		}
 		
 		$scope.recruitingsList = $scope.tempRecruitingsList;

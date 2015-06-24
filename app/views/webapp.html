@@ -6,6 +6,9 @@
 			<!-- Create Recruiting button -->
 			<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="add" data-ng-if="!waiting && !creatingRecruiting && !creatingRecruitingPromise && !error" data-ng-click="createRecruiting()">Create</button>
 			
+			<!-- Allow notifications -->
+			<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="notifications" data-ng-if="!notificationsAllowed" data-ng-click="allowNotifications()">Allow Notifications</button>
+			
 			<!-- Logout button -->
 			<button class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="external" data-ng-if="!error" data-ng-click="logoutUser()">Logout</button>
 		</div>
@@ -97,18 +100,22 @@
 </form>
 
 <!-- Existing recruiting -->
-<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingOnMyLocation && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting ) && recruiting.location == user.location && recruiting.completed != '1' && recruiting.cancelled != '1' && recruiting.maxPlayers > recruiting.players.length">
+<div class="mc-card" 
+	data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" 
+	data-ng-if="user && recruitingOnMyLocation && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting ) && recruiting.location == user.location && recruiting.cancelled != '1'"
+	data-ng-class="{'mc-bg-twitter': recruiting.completed == '1'}">
 
 	<div class="mc-header">
 		<img style="border-radius: 0px!important;" src="images/logo_128.png" />
 		<h1 class="mc-title">{{ recruiting.description }}</h1>
-		<h2 class="mc-subtitle">Created: {{ recruiting.date }}</h2>
+		<h2 class="mc-subtitle" data-ng-if="recruiting.completed != '1'">Created: {{ recruiting.date }}</h2>
+		<h2 class="mc-subtitle mc-color-white" data-ng-if="recruiting.completed == '1'">Completed</h2>
 	</div>
 	
-	<div class="mc-content" mc-layout="list">
-		<h1 class="mc-subtitle mc-right">Players: {{ recruiting.players.length }} / {{ recruiting.maxPlayers }}</h1>
-		<div class="mc-list-item" data-ng-repeat="player in recruiting.players">
-			<p class="mc-text">{{ player }}</p>
+	<div class="mc-content" mc-layout="list" >
+		<h1 class="mc-subtitle mc-right" data-ng-class="{'mc-bg-twitter mc-color-white': recruiting.completed == '1'}">Players: {{ recruiting.players.length }} / {{ recruiting.maxPlayers }}</h1>
+		<div class="mc-list-item" data-ng-repeat="player in recruiting.players" data-ng-class="{'mc-bg-twitter': recruiting.completed == '1'}">
+			<p class="mc-text" data-ng-class="{'mc-color-white': recruiting.completed == '1'}">{{ player }}</p>
 		</div>
 	</div>
 	
@@ -143,3 +150,5 @@
 </div>
 
 <button id="refresh" style="display: none;" class="mc-button mc-button-comb mc-button-raised mc-clickable" mc-action="refresh" data-ng-click="refreshPage()">Refresh</button>
+
+<div style="display:none"><audio id="notificationSound"><source src="media/notification.mp3" type="audio/mpeg"></audio></div>

@@ -89,18 +89,22 @@
 </form>
 
 <!-- Existing recruiting -->
-<div class="mc-card" data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" data-ng-if="user && recruitingsList.length >= 1 && recruitingOnMyLocation && recruiting.location == user.location && !creatingRecruiting && recruiting.completed != '1' && recruiting.cancelled != '1' && (!waiting || viewAllRecruitings || recruiting.myRecruiting )">
+<div class="mc-card" 
+	data-ng-repeat="recruiting in recruitingsList | orderBy:'date':false" 
+	data-ng-if="user && recruitingOnMyLocation && !creatingRecruiting && (!waiting || viewAllRecruitings || recruiting.myRecruiting ) && recruiting.location == user.location && recruiting.cancelled != '1'"
+	data-ng-class="{'mc-bg-twitter': recruiting.completed == '1'}">
 
 	<div class="mc-header">
 		<img style="border-radius: 0px!important;" src="images/logo_128.png" />
 		<h1 class="mc-title">{{ recruiting.description }}</h1>
-		<h2 class="mc-subtitle">Created: {{ recruiting.date }}</h2>
+		<h2 class="mc-subtitle" data-ng-if="recruiting.completed != '1'">Created: {{ recruiting.date }}</h2>
+		<h2 class="mc-subtitle mc-color-white" data-ng-if="recruiting.completed == '1'">Completed</h2>
 	</div>
 	
-	<div class="mc-content" mc-layout="list">
-		<h1 class="mc-subtitle mc-right">Players: {{ recruiting.players.length }} / {{ recruiting.maxPlayers }}</h1>
-		<div class="mc-list-item" data-ng-repeat="player in recruiting.players">
-			<p class="mc-text">{{ player }}</p>
+	<div class="mc-content" mc-layout="list" >
+		<h1 class="mc-subtitle mc-right" data-ng-class="{'mc-bg-twitter mc-color-white': recruiting.completed == '1'}">Players: {{ recruiting.players.length }} / {{ recruiting.maxPlayers }}</h1>
+		<div class="mc-list-item" data-ng-repeat="player in recruiting.players" data-ng-class="{'mc-bg-twitter': recruiting.completed == '1'}">
+			<p class="mc-text" data-ng-class="{'mc-color-white': recruiting.completed == '1'}">{{ player }}</p>
 		</div>
 	</div>
 	

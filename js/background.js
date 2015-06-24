@@ -336,13 +336,14 @@ var parseRecruitingsList = function(param){
 					"id": temp1.id,
 					"location": user.location
 				};
-				param[x].completed = true;
+				param[x].completed = "1";
+				temp1.completed = "1";
 			}
 			
 			/*	Add players to the recruiting	*/
 			for(var y in temp1.players){
 				
-				if(temp1.players[y] == user.name && temp1.completed == false){
+				if(temp1.players[y] == user.name && temp1.completed != '1'){
 					waiting = true;
 					temp1.myRecruiting = true;
 				}
