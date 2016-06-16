@@ -3,37 +3,37 @@
 <html ng-app="teamUp" ng-csp="" style="min-width: 300px;">
 	<head>
 		<!-- METAS -->
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
 		<title>Team Up!</title>
 		<meta name="description" content="Team Up! is a simple extension for creating recruitments." />
-		
+
 		<!--Android -->
 		<meta name="mobile-web-app-capable" content="yes">
 		<link rel="manifest" href="manifest.json">
-        <link rel="shortcut icon" href="images/logo.png" />
+    <link rel="shortcut icon" href="images/logo.png" />
 		<link rel="icon" href="images/logo_256.png" sizes="256x256">
 		<meta name="theme-color" content="#55ACEE">
-		
+
 		<!-- iOS -->
 		<meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="apple-touch-icon" href="images/logo_256.png" />
-		
+    <link rel="apple-touch-icon" href="images/logo_256.png" />
+
 		<!-- Chrome Web Store -->
 		<link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/ggodlfmnafpmahoddgdlngfnhnkfnedj">
-		
+
 		<!-- JS -->
-        <script type="text/javascript" src="js/jquery.min.js"></script>
-		
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+
 		<!-- CSS files -->
-        <link rel="stylesheet" type="text/css" href="js/angular-csp.css">
-		
+    <link rel="stylesheet" type="text/css" href="js/angular-csp.css">
+
 		<!-- Material-CSS files -->
-        <script src="material-css/material-css.js"></script>
-        <link rel="stylesheet" type="text/css" href="material-css/material-css.css">
-        <link rel="stylesheet" type="text/css" href="material-css/color-themes/twitter-theme.css">
-		
+    <script src="material-css/material-css.js"></script>
+    <link rel="stylesheet" type="text/css" href="material-css/material-css.css">
+    <link rel="stylesheet" type="text/css" href="material-css/color-themes/twitter-theme.css">
+
 		<!-- 	Facebook  -->
 		<meta property="og:site_name" content="Team Up!" />
 		<meta property="og:type" content="website" />
@@ -41,7 +41,7 @@
 		<meta property="og:url" content="http://teamup.imperdiblesoft.com" />
 		<meta property="og:description" content="Team Up! is a simple extension for creating recruitments." />
 		<meta property="og:image" content="http://teamup.imperdiblesoft.com/images/logo_256.png" />
-	
+
 		<!-- Twitter -->
 		<meta name="twitter:creator" content="@ImperdibleSoft" />
 		<meta name="twitter:domain" content="imperdiblesoft.com" />
@@ -50,7 +50,7 @@
 		<meta name="twitter:description" content="Team Up! is a simple extension for creating recruitments." />
 		<meta name="twitter:url" content="http://teamup.imperdiblesoft.com" />
 		<meta name="twitter:image" content="http://teamup.imperdiblesoft.com/images/logo_256.png" />
-	
+
 		<!-- Google+ -->
 		<link rel="author" href="https://plus.google.com/+Imperdiblesoft/" />
 		<meta itemprop="url" content="http://teamup.imperdiblesoft.com" />
@@ -58,57 +58,58 @@
 		<meta itemprop="description" content="Team Up! is a simple extension for creating recruitments." />
 		<meta itemprop="thumbnail" content="http://schema.org/ImageObject" />
 		<meta itemprop="thumbnailUrl" content="http://teamup.imperdiblesoft.com/images/logo_256.png" />
-		
+
 	</head>
 	<body mc-layout="no-nav">
-        
+
 		<!-- Splash screen -->
 		<div class="mc-splash">
 			<div class="mc-content">
 				<img src="images/logo.png" />
 			</div>
 		</div>
-		
+
 		<!-- Header -->
 		<header class="mc-header">
 			<div class="mc-header-line">
 				<a id="backBtn" href="javascript:history.back(1)" class="mc-button mc-button-icon mc-clickable" mc-action="prev"></a>
 				<h1 class="mc-title">Team Up!</h1>
 			</div>
-        </header>
+    </header>
 
 		<!-- Content -->
 		<section class="mc-content mc-untabbed" data-ng-view=""></section>
-		
+
 		<!-- Footer -->
 		<section class="mc-footer">
 			<p class="mc-note">Team Up! v<span id="appVersion"></span> | Created by <a href="http://www.imperdiblesoft.com" target="_blank" class="mc-color-imperdiblesoft" mc-tooltip="imperdiblesoft">ImperdibleSoft</a></p>
 			<span class="mc-tooltip" mc-item="imperdiblesoft">Visit www.imperdiblesoft.com to view more incredible products.</span>
 		</section>
-		
+
 		<!-- Notifications -->
 		<div class="mc-notification-container"></div>
-		
-        <!-- Vendors -->
-    	<script src="js/angular.min.js"></script>
-    	<script src="js/angular-route.min.js"></script>
-    	<script src="js/angular-cookies.js"></script>
 
-        <!-- App -->
-    	<script src="app/app.js"></script>
-    	<script src="app/conf.js"></script>
-		
+    <!-- Vendors -->
+  	<script src="js/angular.min.js"></script>
+  	<script src="js/angular-route.min.js"></script>
+  	<script src="js/angular-cookies.js"></script>
+
+    <!-- App -->
+  	<script src="app/app.js"></script>
+  	<script src="app/conf.js"></script>
+
 		<!-- Controllers -->
-    	<script src="app/controllers/webController.js"></script>
-    	<script src="app/controllers/webAppController.js"></script>
-    	<script src="app/controllers/extensionController.js"></script>
-		
+  	<script src="app/controllers/webController.js"></script>
+  	<script src="app/controllers/webAppController.js"></script>
+  	<script src="app/controllers/extensionController.js"></script>
+
 		<!-- Directives -->
-    	<script src="app/directives/autocomplete.js"></script>
-		
+  	<script src="app/directives/autocomplete.js"></script>
+
 		<!-- Services -->
-        <script src="app/services/services.js"></script>
-		
-    	<script src="http://www.imperdiblesoft.com/js/custom-sign.js"></script>
+    <script src="app/services/services.js"></script>
+
+		<script src="js/analytics.js"></script>
+  	<script src="http://www.imperdiblesoft.com/js/custom-sign.js"></script>
 	</body>
 </html>
